@@ -1,6 +1,16 @@
 import React, { useState } from "react";
-import { Heart, Instagram, Mail, MessageCircle, Menu, X, ChevronRight, ArrowRight } from "lucide-react";
+import { Heart, Mail, MessageCircle, Menu, X, ChevronRight, ArrowRight } from "lucide-react";
 import logoImg from "./assets/logo.jpg";
+
+function InstagramIcon({ size = 16, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8">
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4.2" />
+      <circle cx="17.3" cy="6.7" r="1" fill={color} stroke="none" />
+    </svg>
+  );
+}
 
 const CREAM = "#F6F0E3";
 const CREAM_DARK = "#ECE2CC";
@@ -344,7 +354,7 @@ export default function MimaCreationsSite() {
           <Logo size={90} />
           <h2 className="display text-2xl mt-4 mb-6">Get in touch</h2>
           <div className="flex flex-col gap-4 items-center text-sm">
-            <span className="flex items-center gap-2"><Instagram size={16} /> @mimaa_creations2</span>
+            <span className="flex items-center gap-2"><InstagramIcon size={16} /> @mimaa_creations2</span>
             <span className="flex items-center gap-2"><Mail size={16} /> hello@mimacreations.com</span>
             <span className="flex items-center gap-2"><MessageCircle size={16} /> WhatsApp — add your number</span>
           </div>
@@ -360,7 +370,7 @@ export default function MimaCreationsSite() {
           <span className="script text-lg">Mima Creations</span>
         </div>
         <div className="flex items-center gap-5 text-xs" style={{ color: INK_SOFT }}>
-          <span className="flex items-center gap-1"><Instagram size={14} /> @mimaa_creations2</span>
+          <span className="flex items-center gap-1"><InstagramIcon size={14} /> @mimaa_creations2</span>
           <span className="flex items-center gap-1"><Mail size={14} /> hello@mimacreations.com</span>
         </div>
       </footer>
