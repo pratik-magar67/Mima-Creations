@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Heart, Mail, MessageCircle, Menu, X, ChevronRight, ArrowRight } from "lucide-react";
+import { Heart, Mail, MessageCircle, Menu, X, ChevronRight, ArrowRight, Search } from "lucide-react";
 import logoImg from "./assets/logo.jpg";
 
 function InstagramIcon({ size = 16, color = "currentColor" }) {
@@ -48,6 +48,10 @@ const PIECES = {
   ],
 };
 
+const ALL_PIECES = Object.entries(PIECES).flatMap(([category, pieces]) =>
+  pieces.map((piece) => ({ ...piece, category }))
+);
+
 const TESTIMONIALS = [
   { quote: "Placeholder — swap in a real quote from your Feedback highlight.", name: "Customer name" },
   { quote: "Placeholder — swap in a real quote from your Feedback highlight.", name: "Customer name" },
@@ -86,6 +90,9 @@ export default function MimaCreationsSite() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [enquiry, setEnquiry] = useState({ name: "", contact: "", category: "sarees", notes: "", budget: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [favorites, setFavorites] = useState([]);
 
   function nav(v, cat = null) {
     setView(v);
@@ -110,6 +117,19 @@ export default function MimaCreationsSite() {
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  function toggleFavorite(pieceName) {
+    setFavorites((current) => current.includes(pieceName)
+      ? current.filter((name) => name !== pieceName)
+      : [...current, pieceName]
+    );
+  }
+
+  const filteredPieces = ALL_PIECES.filter((piece) => {
+    const matchesCategory = filterCategory === "all" || piece.category === filterCategory;
+    const matchesSearch = piece.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const navLinks = [
     ["home", "Home"],
@@ -222,17 +242,52 @@ export default function MimaCreationsSite() {
 
       {view === "shop" && (
         <section className="px-6 md:px-12 py-14 max-w-6xl mx-auto">
-          <h2 className="display text-3xl mb-2">Shop by category</h2>
-          <p className="text-sm mb-10" style={{ color: INK_SOFT }}>Every piece is made to order — pick a category to browse.</p>
-          <div className="grid sm:grid-cols-2 gap-6">
-            {CATEGORIES.map((c) => (
-              <button key={c.id} onClick={() => nav("category", c.id)} className="btn text-left" style={{ background: CREAM, border: `1px solid ${SAGE}` }}>
-                <PlaceholderImage label={c.name} tall />
-                <div className="p-5">
-                  <h3 className="display text-lg mb-1">{c.name}</h3>
-                  <p className="text-xs" style={{ color: INK_SOFT }}>{c.desc}</p>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-7">
+            <div>
+              <h2 className="display text-3xl mb-2">Browse the collection</h2>
+              <p className="text-sm" style={{ color: INK_SOFT }}>Every piece is made to order, then fitted to you.</p>
+            </div>
+            <span className="text-xs" style={{ color: SAGE_DARK }}>{favorites.length} saved {favorites.length === 1 ? "piece" : "pieces"}</span>
+          </div>
+          <div className="flex flex-col md:flex-row gap-3 mb-8">
+            <label className="flex items-center gap-2 border px-3 py-2 flex-1" style={{ borderColor: CREAM_DARK, background: "#fffaf0" }}>
+              <Search size={16} color={INK_SOFT} />
+              <input aria-label="Search pieces" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search pieces" className="bg-transparent outline-none text-sm w-full" />
+            </label>
+            <select aria-label="Filter by category" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="border px-3 py-2 text-sm" style={{ borderColor: CREAM_DARK, background: "#fffaf0" }}>
+              <option value="all">All categories</option>
+              {CATEGORIES.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            </select>
+          </div>
+          <p className="text-xs mb-4" style={{ color: INK_SOFT }}>{filteredPieces.length} {filteredPieces.length === 1 ? "piece" : "pieces"} found</p>
+          {filteredPieces.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPieces.map((piece) => (
+                <div key={piece.name} style={{ border: `1px solid ${CREAM_DARK}`, background: CREAM }}>
+                  <div className="relative">
+                    <PlaceholderImage label={piece.name} tall />
+                    <button onClick={() => toggleFavorite(piece.name)} aria-label={`${favorites.includes(piece.name) ? "Remove" : "Save"} ${piece.name}`} className="absolute top-3 right-3 p-2" style={{ background: CREAM }}>
+                      <Heart size={17} fill={favorites.includes(piece.name) ? ROSE : "none"} color={ROSE} />
+                    </button>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs uppercase tracking-wide mb-1" style={{ color: SAGE_DARK }}>{CATEGORIES.find((category) => category.id === piece.category)?.name}</p>
+                    <h3 className="display text-base mb-1">{piece.name}</h3>
+                    <p className="text-xs mb-3" style={{ color: INK_SOFT }}>{piece.price}</p>
+                    <button onClick={() => startEnquiry(piece.category, piece.name)} className="btn text-xs px-4 py-2 w-full" style={{ background: SAGE_DARK, color: CREAM }}>Enquire about this piece</button>
+                  </div>
                 </div>
-              </button>
+              ))}
+            </div>
+          ) : (
+            <div className="py-14 text-center" style={{ border: `1px solid ${CREAM_DARK}` }}>
+              <p className="display text-xl mb-2">Nothing found yet</p>
+              <p className="text-sm" style={{ color: INK_SOFT }}>Try another search or browse all categories.</p>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2 mt-10">
+            {CATEGORIES.map((category) => (
+              <button key={category.id} onClick={() => setFilterCategory(category.id)} className="text-xs px-3 py-2 border" style={{ borderColor: SAGE, color: SAGE_DARK }}>{category.name}</button>
             ))}
           </div>
         </section>
