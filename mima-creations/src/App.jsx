@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Heart, Mail, MessageCircle, Menu, X, ChevronRight, ArrowRight, Search } from "lucide-react";
-import logoImg from "./assets/logo.jpg";
+import logoImg from "./assets/logo.png";
 
 function InstagramIcon({ size = 16, color = "currentColor" }) {
   return (
@@ -65,7 +65,7 @@ function Logo({ size = 120 }) {
       alt="Mima Creations logo"
       width={size}
       height={size}
-      style={{ objectFit: "contain" }}
+      style={{ objectFit: "contain", display: "block", mixBlendMode: "multiply" }}
     />
   );
 }
