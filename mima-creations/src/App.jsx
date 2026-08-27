@@ -1,6 +1,8 @@
+import { supabase } from "./supabaseClient";
 import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react";
 import { Heart, Mail, MessageCircle, Menu, X, ChevronRight, ArrowRight, ArrowUp, Search } from "lucide-react";
 import logoImg from "./assets/logo.png";
+
 
 // --- CONSTANTS & DATA ---
 const WHATSAPP_NUMBER = "9779824203807"; // Replace with your WhatsApp number with country code
@@ -373,10 +375,26 @@ export default function MimaCreationsSite() {
     setEnquiry((f) => ({ ...f, [name]: value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setSubmitted(true);
-    
+
+    // Save the enquiry to Supabase so it shows up in the dashboard
+    const { error } = await supabase.from("enquiries").insert([
+      {
+        name: enquiry.name,
+        contact: enquiry.contact,
+        category: enquiry.category,
+        notes: enquiry.notes || null,
+        budget: enquiry.budget || null,
+        status: "new",
+      },
+    ]);
+
+    if (error) {
+      console.error("Could not save enquiry:", error.message);
+    }
+
     // Create pre-filled WhatsApp link
     const text = encodeURIComponent(
       `Hi Mima Creations! I would like to submit an enquiry:\n\n` +
@@ -386,7 +404,7 @@ export default function MimaCreationsSite() {
       `*Notes:* ${enquiry.notes || "None"}\n` +
       `*Budget:* ${enquiry.budget || "Not specified"}`
     );
-    
+
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, "_blank");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
