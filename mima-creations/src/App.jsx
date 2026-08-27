@@ -53,7 +53,7 @@ function Logo({ size = 120 }) {
 }
 
 function PlaceholderImage({ label, tall = false, fill = false }) {
-  const heightClass = fill ? "h-full" : tall ? "h-72" : "h-48";
+  const heightClass = fill ? "h-full" : tall ? "aspect-[4/5] h-auto" : "aspect-square h-auto";
 
   return (
     <div
@@ -656,7 +656,7 @@ export default function MimaCreationsSite() {
                     <div className="card-hover" style={{ border: `1px solid ${CREAM_DARK}`, background: CREAM }}>
                     <div className="relative">
                       {piece.image_url ? (
-                        <FadeImage src={piece.image_url} alt={piece.name} className="h-72" />
+                        <FadeImage src={piece.image_url} alt={piece.name} className="aspect-[4/5] h-auto" />
                       ) : (
                         <PlaceholderImage label={piece.name} tall />
                       )}
@@ -725,7 +725,7 @@ export default function MimaCreationsSite() {
                 <Reveal key={i} delay={Math.min(i * 0.06, 0.3)}>
                   <div className="card-hover" style={{ border: `1px solid ${CREAM_DARK}` }}>
                   {p.image_url ? (
-                    <FadeImage src={p.image_url} alt={p.name} className="h-72" />
+                    <FadeImage src={p.image_url} alt={p.name} className="aspect-[4/5] h-auto" />
                   ) : (
                     <PlaceholderImage label={p.name} tall />
                   )}
