@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Heart, Mail, MessageCircle, Menu, X, ChevronRight, ArrowRight, Search } from "lucide-react";
+import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react";
+import { Heart, Mail, MessageCircle, Menu, X, ChevronRight, ArrowRight, ArrowUp, Search } from "lucide-react";
 import logoImg from "./assets/logo.png";
 
 // --- CONSTANTS & DATA ---
-const WHATSAPP_NUMBER = "+977 9824203807"; // Replace with your WhatsApp number with country code
+const WHATSAPP_NUMBER = "9779824203807"; // Replace with your WhatsApp number with country code
 
 const CREAM = "#F6F0E3";
 const CREAM_DARK = "#ECE2CC";
@@ -74,16 +74,195 @@ function Logo({ size = 120 }) {
   );
 }
 
-function PlaceholderImage({ label, tall = false }) {
+function PlaceholderImage({ label, tall = false, fill = false }) {
+  const heightClass = fill ? "h-full" : tall ? "h-72" : "h-48";
+
   return (
     <div
-      className={`w-full ${tall ? "h-72" : "h-48"} flex flex-col items-center justify-center gap-2`}
+      className={`w-full ${heightClass} flex flex-col items-center justify-center gap-2`}
       style={{ background: SAGE_LIGHT, border: `1px solid ${SAGE}` }}
     >
-      <Heart size={22} color={SAGE_DARK} strokeWidth={1.2} />
+      <Heart
+        size={22}
+        color={SAGE_DARK}
+        strokeWidth={1.2}
+        style={{ transition: "transform 0.3s ease" }}
+        className="group-hover:scale-110"
+      />
       <span className="text-xs px-4 text-center" style={{ color: INK_SOFT }}>
         {label}
       </span>
+    </div>
+  );
+}
+
+export function FadeImage({ src, alt, className = "" }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onLoad={() => setLoaded(true)}
+      className={className}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+        opacity: loaded ? 1 : 0,
+        filter: loaded ? "blur(0px)" : "blur(10px)",
+        transition: "opacity 0.5s ease, filter 0.5s ease",
+      }}
+    />
+  );
+}
+
+function Reveal({ children, delay = 0, className = "" }) {
+  const ref = React.useRef(null);
+  const [visible, setVisible] = useState(() => (
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ));
+
+  useEffect(() => {
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.15 });
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(16px)",
+        transition: `opacity 0.6s ease ${delay}s, transform 0.6s ease ${delay}s`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function StitchDivider() {
+  const ref = React.useRef(null);
+  const [drawn, setDrawn] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setDrawn(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.5 });
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <svg ref={ref} width="100%" height="20" style={{ display: "block" }} aria-hidden="true">
+      <line
+        x1="0"
+        y1="10"
+        x2="100%"
+        y2="10"
+        stroke={SAGE_DARK}
+        strokeWidth="1.5"
+        strokeDasharray="6 8"
+        strokeDashoffset={drawn ? 0 : 1000}
+        style={{ transition: "stroke-dashoffset 1.4s ease" }}
+      />
+    </svg>
+  );
+}
+
+function StitchCheck() {
+  const [drawn, setDrawn] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDrawn(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+      <circle
+        cx="32"
+        cy="32"
+        r="28"
+        fill="none"
+        stroke={SAGE}
+        strokeWidth="1.5"
+        strokeDasharray="4 6"
+        strokeDashoffset={drawn ? 0 : 200}
+        style={{ transition: "stroke-dashoffset 1s ease" }}
+      />
+      <path
+        d="M20 33 L28 41 L44 24"
+        fill="none"
+        stroke={ROSE}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray="40"
+        strokeDashoffset={drawn ? 0 : 40}
+        style={{ transition: "stroke-dashoffset 0.6s ease 0.5s" }}
+      />
+    </svg>
+  );
+}
+
+function ScrollToTopButton({ visible }) {
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Scroll to top"
+      className="btn scroll-top-btn"
+      style={{
+        position: "fixed",
+        bottom: "75px",
+        right: "20px",
+        width: "44px",
+        height: "44px",
+        borderRadius: "50%",
+        background: SAGE_DARK,
+        color: CREAM,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        opacity: visible ? 1 : 0,
+        pointerEvents: visible ? "auto" : "none",
+        transform: visible ? "translateY(0)" : "translateY(12px)",
+        transition: "opacity 0.3s ease, transform 0.3s ease",
+        zIndex: 30,
+        border: "none",
+      }}
+    >
+      <ArrowUp size={18} />
+    </button>
+  );
+}
+
+function MobileEnquireBar({ onEnquire }) {
+  return (
+    <div
+      className="md:hidden fixed bottom-0 inset-x-0 z-20 px-4 py-3"
+      style={{ background: CREAM, borderTop: `1px solid ${CREAM_DARK}` }}
+    >
+      <button onClick={onEnquire} className="btn w-full text-sm py-3" style={{ background: ROSE, color: CREAM }}>
+        Enquire about a custom piece
+      </button>
     </div>
   );
 }
@@ -97,6 +276,12 @@ export default function MimaCreationsSite() {
   const [submitted, setSubmitted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [fade, setFade] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [headerScrolled, setHeaderScrolled] = useState(false);
+  const navRefs = useRef({});
+  const fadeTimeout = useRef(null);
+  const [indicator, setIndicator] = useState({ left: 0, width: 0, ready: false });
 
   // Load and persist favorites in localStorage
   const [favorites, setFavorites] = useState(() => {
@@ -116,6 +301,32 @@ export default function MimaCreationsSite() {
     }
   }, [favorites]);
 
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 480);
+      setHeaderScrolled(window.scrollY > 12);
+    }
+
+    window.addEventListener("scroll", onScroll);
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useLayoutEffect(() => {
+    const el = navRefs.current[view];
+    if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth, ready: true });
+  }, [view]);
+
+  useEffect(() => {
+    function onResize() {
+      const el = navRefs.current[view];
+      if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth, ready: true });
+    }
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [view]);
+
   // Optimized Search/Filter via useMemo
   const filteredPieces = useMemo(() => {
     return ALL_PIECES.filter((piece) => {
@@ -126,11 +337,30 @@ export default function MimaCreationsSite() {
   }, [searchTerm, filterCategory]);
 
   function nav(targetView, cat = null) {
-    setView(targetView);
-    setActiveCategory(cat);
-    setMenuOpen(false);
-    setSubmitted(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function apply() {
+      setView(targetView);
+      setActiveCategory(cat);
+      setMenuOpen(false);
+      setSubmitted(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    if (prefersReduced) {
+      apply();
+      return;
+    }
+
+    if (fadeTimeout.current) clearTimeout(fadeTimeout.current);
+
+    setFade(true);
+    fadeTimeout.current = setTimeout(() => {
+      apply();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setFade(false));
+      });
+    }, 150);
   }
 
   function startEnquiry(categoryId, pieceName) {
@@ -197,25 +427,74 @@ export default function MimaCreationsSite() {
         @import url('https://fonts.googleapis.com/css2?family=Parisienne&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap');
         .script { font-family: 'Parisienne', cursive; }
         .display { font-family: 'Playfair Display', serif; color: #2B2620; }
+        .eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.6875rem; }
         .btn { transition: transform 0.15s ease, opacity 0.15s ease; }
         .btn:hover { transform: translateY(-1px); opacity: 0.92; }
-        input:focus, select:focus, textarea:focus { outline: 2px solid ${SAGE_DARK}; outline-offset: 2px; }
-        button:focus, a:focus { outline: 2px solid ${SAGE_DARK}; outline-offset: 2px; }
+        .card-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(43,38,32,0.08); }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .mobile-menu-enter { animation: slideDown 0.25s ease; }
+        @media (min-width: 768px) {
+          .scroll-top-btn { bottom: 24px !important; }
+        }
+        .fabric-texture {
+          background-image:
+            repeating-linear-gradient(45deg, rgba(43,38,32,0.025) 0, rgba(43,38,32,0.025) 1px, transparent 1px, transparent 7px),
+            repeating-linear-gradient(-45deg, rgba(43,38,32,0.025) 0, rgba(43,38,32,0.025) 1px, transparent 1px, transparent 7px);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .mobile-menu-enter { animation: none; }
+          .card-hover:hover { transform: none; }
+        }
+        input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid ${SAGE_DARK}; outline-offset: 2px; }
+        button:focus-visible, a:focus-visible { outline: 2px solid ${SAGE_DARK}; outline-offset: 2px; }
+        button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
       `}</style>
 
       {/* HEADER */}
-      <header className="flex items-center justify-between px-6 md:px-12 py-4 border-b sticky top-0 z-10" style={{ borderColor: CREAM_DARK, background: CREAM }}>
-        <button onClick={() => nav("home")} className="flex items-center gap-3">
-          <Logo size={56} />
-          <span className="hidden sm:block display text-lg" style={{ color: INK }}>Mima Creations</span>
+      <header
+        className="flex items-center justify-between px-6 md:px-12 py-4 sticky top-0 z-10"
+        style={{
+          background: CREAM,
+          borderBottom: `1px solid ${headerScrolled ? CREAM_DARK : "transparent"}`,
+          boxShadow: headerScrolled ? "0 4px 16px rgba(43,38,32,0.06)" : "none",
+          transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+        }}
+      >
+        <button onClick={() => nav("home")} className="flex items-center gap-4">
+          <Logo size={60} />
+          <span className="block display text-base sm:text-xl" style={{ color: INK, letterSpacing: "0.01em" }}>Mima Creations</span>
         </button>
 
-        <nav className="hidden md:flex items-center gap-7 text-sm" style={{ color: INK_SOFT }}>
+        <nav className="hidden md:flex items-center gap-7 text-sm relative" style={{ color: INK_SOFT }}>
           {navLinks.map(([id, label]) => (
-            <button key={id} onClick={() => nav(id)} className={view === id ? "font-medium" : ""} style={{ color: view === id ? INK : INK_SOFT }}>
+            <button
+              key={id}
+              ref={(el) => (navRefs.current[id] = el)}
+              onClick={() => nav(id)}
+              className={view === id ? "font-medium" : ""}
+              style={{ color: view === id ? INK : INK_SOFT }}
+            >
               {label}
             </button>
           ))}
+          {indicator.ready && (
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                bottom: "-8px",
+                left: indicator.left,
+                width: indicator.width,
+                height: 0,
+                borderBottom: `1.5px dashed ${SAGE_DARK}`,
+                transition: "left 0.35s ease, width 0.35s ease",
+              }}
+            />
+          )}
         </nav>
 
         <div className="flex items-center gap-3">
@@ -230,7 +509,7 @@ export default function MimaCreationsSite() {
 
       {/* MOBILE MENU */}
       {menuOpen && (
-        <div className="md:hidden flex flex-col px-6 py-4 gap-3 border-b" style={{ background: CREAM, borderColor: CREAM_DARK }}>
+        <div className="md:hidden flex flex-col px-6 py-4 gap-3 border-b mobile-menu-enter" style={{ background: CREAM, borderColor: CREAM_DARK }}>
           {navLinks.map(([id, label]) => (
             <button key={id} onClick={() => nav(id)} className="text-left text-sm py-1" style={{ color: INK }}>
               {label}
@@ -243,48 +522,63 @@ export default function MimaCreationsSite() {
       )}
 
       {/* MAIN CONTENT */}
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0" style={{ opacity: fade ? 0 : 1, transition: "opacity 0.18s ease" }}>
         {view === "home" && (
           <>
-            <section className="px-6 md:px-12 py-16 md:py-20 grid md:grid-cols-2 gap-10 items-center max-w-6xl mx-auto">
-              <div>
-                <p className="script text-2xl mb-3" style={{ color: ROSE }}>From my hand to your heart</p>
-                <h1 className="display text-4xl md:text-5xl leading-tight mb-5" style={{ color: INK }}>
-                  Your design, our craft.
-                </h1>
-                <p className="text-sm mb-6" style={{ color: INK_SOFT }}>
-                  Custom-made · Made-to-order · Prepaid only. Sarees & blouses, dresses & gowns, kurtis, and hand-crocheted
-                  pieces — every one made just for you.
-                </p>
-                <button onClick={() => nav("enquiry")} className="btn inline-flex items-center gap-2 text-sm px-6 py-3" style={{ background: ROSE, color: CREAM }}>
-                  Enquire about a custom piece <ArrowRight size={16} />
-                </button>
-              </div>
-              <PlaceholderImage label="Replace with a hero photo — an embroidered blouse or saree works best" tall />
-            </section>
-
-            <section className="px-6 md:px-12 py-14" style={{ background: SAGE_LIGHT }}>
-              <h2 className="display text-3xl mb-8 text-center" style={{ color: INK, letterSpacing: "0.01em" }}>
-                What we make
-              </h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                {CATEGORIES.map((c) => (
-                  <button key={c.id} onClick={() => nav("category", c.id)} className="btn text-left" style={{ background: CREAM, border: `1px solid ${SAGE}` }}>
-                    <PlaceholderImage label={c.name} />
-                    <div className="p-4">
-                      <h3 className="display text-base mb-1">{c.name}</h3>
-                      <p className="text-xs" style={{ color: INK_SOFT }}>{c.desc}</p>
-                      <span className="inline-flex items-center gap-1 text-xs mt-3" style={{ color: SAGE_DARK }}>
-                        View pieces <ChevronRight size={14} />
-                      </span>
-                    </div>
+            <section className="relative overflow-hidden">
+              <Reveal className="grid md:grid-cols-[1.1fr_1fr] items-stretch">
+                <div className="px-6 md:px-12 py-16 md:py-24 flex flex-col justify-center order-2 md:order-1">
+                  <svg aria-hidden="true" width="220" height="30" style={{ marginBottom: "-6px" }}>
+                    <line x1="0" y1="15" x2="220" y2="15" stroke={SAGE_DARK} strokeWidth="1.5" strokeDasharray="6 8" opacity="0.6" />
+                  </svg>
+                  <p className="script text-2xl mb-3" style={{ color: ROSE }}>From my hand to your heart</p>
+                  <h1 className="display text-4xl md:text-6xl leading-[1.05] mb-5" style={{ color: INK }}>
+                    Your design,<br />our craft.
+                  </h1>
+                  <p className="text-base mb-6 max-w-md" style={{ color: INK_SOFT }}>
+                    Custom-made · Made-to-order · Prepaid only. Sarees & blouses, dresses & gowns, kurtis, and hand-crocheted
+                    pieces — every one made just for you.
+                  </p>
+                  <button onClick={() => nav("enquiry")} className="btn inline-flex items-center gap-2 text-sm px-6 py-3 w-fit" style={{ background: ROSE, color: CREAM }}>
+                    Enquire about a custom piece <ArrowRight size={16} />
                   </button>
-                ))}
-              </div>
+                </div>
+                <div className="order-1 md:order-2 h-64 md:h-auto">
+                  <PlaceholderImage label="Replace with a hero photo — an embroidered blouse or saree works best" fill />
+                </div>
+              </Reveal>
             </section>
 
-            <section className="py-16 md:py-20" style={{ background: CREAM }}>
-              <div className="max-w-6xl mx-auto px-6">
+            <StitchDivider />
+
+            <section className="fabric-texture px-6 md:px-12 py-20" style={{ background: SAGE_LIGHT }}>
+              <Reveal>
+                <h2 className="display text-3xl mb-8 text-center" style={{ color: INK, letterSpacing: "0.01em" }}>
+                  What we make
+                </h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                  {CATEGORIES.map((c, i) => (
+                    <Reveal key={c.id} delay={i * 0.08}>
+                      <button onClick={() => nav("category", c.id)} className="btn card-hover group text-left w-full" style={{ background: CREAM, border: `1px solid ${SAGE}` }}>
+                      <PlaceholderImage label={c.name} />
+                      <div className="p-4">
+                        <h3 className="display text-base mb-1">{c.name}</h3>
+                        <p className="text-xs" style={{ color: INK_SOFT }}>{c.desc}</p>
+                        <span className="inline-flex items-center gap-1 text-xs mt-3" style={{ color: SAGE_DARK }}>
+                          View pieces <ChevronRight size={14} />
+                        </span>
+                      </div>
+                      </button>
+                    </Reveal>
+                  ))}
+                </div>
+              </Reveal>
+            </section>
+
+            <StitchDivider />
+
+            <section className="py-24 md:py-28" style={{ background: CREAM }}>
+              <Reveal className="max-w-6xl mx-auto px-6">
                 <h2 className="display text-3xl md:text-4xl text-center mb-10" style={{ color: INK }}>
                   Happy customers
                 </h2>
@@ -299,7 +593,7 @@ export default function MimaCreationsSite() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Reveal>
             </section>
           </>
         )}
@@ -309,7 +603,7 @@ export default function MimaCreationsSite() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-7">
               <div>
                 <h2 className="display text-3xl mb-2">Browse the collection</h2>
-                <p className="text-sm" style={{ color: INK_SOFT }}>Every piece is made to order, then fitted to you.</p>
+                <p className="text-base" style={{ color: INK_SOFT }}>Every piece is made to order, then fitted to you.</p>
               </div>
               <span className="text-xs" style={{ color: SAGE_DARK }}>
                 {favorites.length} saved {favorites.length === 1 ? "piece" : "pieces"}
@@ -341,14 +635,15 @@ export default function MimaCreationsSite() {
               </select>
             </div>
 
-            <p className="text-xs mb-4" style={{ color: INK_SOFT }}>
+            <p className="eyebrow mb-4" style={{ color: INK_SOFT }}>
               {filteredPieces.length} {filteredPieces.length === 1 ? "piece" : "pieces"} found
             </p>
 
             {filteredPieces.length > 0 ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPieces.map((piece) => (
-                  <div key={piece.name} style={{ border: `1px solid ${CREAM_DARK}`, background: CREAM }}>
+                {filteredPieces.map((piece, i) => (
+                  <Reveal key={piece.name} delay={Math.min(i * 0.05, 0.3)}>
+                    <div className="card-hover" style={{ border: `1px solid ${CREAM_DARK}`, background: CREAM }}>
                     <div className="relative">
                       <PlaceholderImage label={piece.name} tall />
                       <button
@@ -357,11 +652,19 @@ export default function MimaCreationsSite() {
                         className="absolute top-3 right-3 p-2"
                         style={{ background: CREAM }}
                       >
-                        <Heart size={17} fill={favorites.includes(piece.name) ? ROSE : "none"} color={ROSE} />
+                        <Heart
+                          size={17}
+                          fill={favorites.includes(piece.name) ? ROSE : "none"}
+                          color={ROSE}
+                          style={{
+                            transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                            transform: favorites.includes(piece.name) ? "scale(1.15)" : "scale(1)",
+                          }}
+                        />
                       </button>
                     </div>
                     <div className="p-4">
-                      <p className="text-xs uppercase tracking-wide mb-1" style={{ color: SAGE_DARK }}>
+                      <p className="eyebrow mb-1" style={{ color: SAGE_DARK }}>
                         {CATEGORIES.find((category) => category.id === piece.category)?.name}
                       </p>
                       <h3 className="display text-base mb-1">{piece.name}</h3>
@@ -374,29 +677,39 @@ export default function MimaCreationsSite() {
                         Enquire about this piece
                       </button>
                     </div>
-                  </div>
+                    </div>
+                  </Reveal>
                 ))}
               </div>
             ) : (
-              <div className="py-14 text-center border" style={{ borderColor: CREAM_DARK }}>
-                <p className="display text-xl mb-2">Nothing found yet</p>
-                <p className="text-sm mb-4" style={{ color: INK_SOFT }}>Try another search or reset your filters.</p>
-                <button onClick={resetFilters} className="btn text-xs px-4 py-2" style={{ background: SAGE_DARK, color: CREAM }}>
-                  Reset filters
-                </button>
-              </div>
+              <Reveal>
+                <div className="py-14 text-center border" style={{ borderColor: CREAM_DARK }}>
+                  <p className="display text-xl mb-2">Nothing found yet</p>
+                  <p className="text-sm mb-4" style={{ color: INK_SOFT }}>Try another search or reset your filters.</p>
+                  <button onClick={resetFilters} className="btn text-xs px-4 py-2" style={{ background: SAGE_DARK, color: CREAM }}>
+                    Reset filters
+                  </button>
+                </div>
+              </Reveal>
             )}
           </section>
         )}
 
         {view === "category" && activeCategory && (
           <section className="px-6 md:px-12 py-14 max-w-6xl mx-auto">
-            <button onClick={() => nav("shop")} className="text-xs mb-6" style={{ color: SAGE_DARK }}>&larr; All categories</button>
+            <nav aria-label="Breadcrumb" className="text-xs mb-6" style={{ color: INK_SOFT }}>
+              <button onClick={() => nav("home")} className="hover:underline">Home</button>
+              <span className="mx-2">/</span>
+              <button onClick={() => nav("shop")} className="hover:underline">Shop</button>
+              <span className="mx-2">/</span>
+              <span style={{ color: INK }}>{CATEGORIES.find((c) => c.id === activeCategory)?.name}</span>
+            </nav>
             <h2 className="display text-3xl mb-1">{CATEGORIES.find((c) => c.id === activeCategory)?.name}</h2>
-            <p className="text-sm mb-10" style={{ color: INK_SOFT }}>{CATEGORIES.find((c) => c.id === activeCategory)?.desc}</p>
+            <p className="text-base mb-10 max-w-xl" style={{ color: INK_SOFT }}>{CATEGORIES.find((c) => c.id === activeCategory)?.desc}</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {(PIECES[activeCategory] || []).map((p, i) => (
-                <div key={i} style={{ border: `1px solid ${CREAM_DARK}` }}>
+                <Reveal key={i} delay={Math.min(i * 0.06, 0.3)}>
+                  <div className="card-hover" style={{ border: `1px solid ${CREAM_DARK}` }}>
                   <PlaceholderImage label={p.name} tall />
                   <div className="p-4">
                     <h3 className="display text-base mb-1">{p.name}</h3>
@@ -405,7 +718,8 @@ export default function MimaCreationsSite() {
                       Enquire about this piece
                     </button>
                   </div>
-                </div>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </section>
@@ -452,7 +766,7 @@ export default function MimaCreationsSite() {
 
         {view === "enquiry" && submitted && (
           <section className="px-6 md:px-12 py-16 max-w-xl mx-auto text-center">
-            <Heart size={26} color={ROSE} className="mx-auto mb-4" />
+            <div className="flex justify-center mb-4"><StitchCheck /></div>
             <h2 className="display text-3xl mb-3">Thank you, {enquiry.name || "friend"}!</h2>
             <p className="text-sm mb-8" style={{ color: INK_SOFT }}>
               Your enquiry has been formatted and opened in WhatsApp. We'll reach out to discuss further details and pricing.
@@ -465,7 +779,7 @@ export default function MimaCreationsSite() {
 
         {view === "about" && (
           <section className="py-16 md:py-20" style={{ background: CREAM }}>
-            <div className="max-w-6xl mx-auto px-6">
+            <Reveal className="max-w-6xl mx-auto px-6">
               <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-center">
                 <PlaceholderImage label="Replace with a photo of the maker at work" tall />
                 <div>
@@ -478,13 +792,13 @@ export default function MimaCreationsSite() {
                   </p>
                 </div>
               </div>
-            </div>
+            </Reveal>
           </section>
         )}
 
         {view === "feedback" && (
           <section className="py-12 md:py-14" style={{ background: CREAM }}>
-            <div className="max-w-6xl mx-auto px-6">
+            <Reveal className="max-w-6xl mx-auto px-6">
               <h2 className="display text-3xl md:text-4xl text-center mb-8" style={{ color: INK }}>
                 Happy customers
               </h2>
@@ -499,13 +813,13 @@ export default function MimaCreationsSite() {
                   </div>
                 ))}
               </div>
-            </div>
+            </Reveal>
           </section>
         )}
 
         {view === "contact" && (
           <section className="py-16 md:py-20" style={{ background: CREAM }}>
-            <div className="max-w-6xl mx-auto px-6">
+            <Reveal className="max-w-6xl mx-auto px-6">
               <div className="max-w-md mx-auto text-center">
                 <div className="flex flex-col items-center gap-2">
                   <Logo size={90} />
@@ -521,14 +835,17 @@ export default function MimaCreationsSite() {
                   Start a custom order
                 </button>
               </div>
-            </div>
+            </Reveal>
           </section>
         )}
       </main>
 
       {/* FOOTER */}
-      <footer className="py-6" style={{ background: CREAM, borderTop: "1px solid #E8DDC9" }}>
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="pt-3 pb-24 md:pb-6" style={{ background: CREAM }}>
+        <div className="max-w-6xl mx-auto px-6">
+          <StitchDivider />
+        </div>
+        <div className="max-w-6xl mx-auto px-6 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Logo size={42} />
             <span className="script text-lg" style={{ color: INK }}>Mima Creations</span>
@@ -539,6 +856,8 @@ export default function MimaCreationsSite() {
           </div>
         </div>
       </footer>
+      {view !== "enquiry" && <MobileEnquireBar onEnquire={() => nav("enquiry")} />}
+      <ScrollToTopButton visible={scrolled} />
     </div>
   );
 }
