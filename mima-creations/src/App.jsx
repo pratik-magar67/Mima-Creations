@@ -23,30 +23,6 @@ const CATEGORIES = [
   { id: "crochet", name: "Crochet", desc: "Hand-crocheted pieces, stitched one loop at a time." },
 ];
 
-const PIECES = {
-  sarees: [
-    { name: "Emerald Embroidered Blouse", price: "From Rs. 3,500" },
-    { name: "Rose Gold Silk Saree Set", price: "From Rs. 6,500" },
-    { name: "Ivory Zari Blouse", price: "From Rs. 3,800" },
-  ],
-  dresses: [
-    { name: "Powder Blue Cottagecore Dress", price: "From Rs. 4,200" },
-    { name: "Crimson Evening Gown", price: "From Rs. 7,000" },
-  ],
-  kurtis: [
-    { name: "Indigo Block-Print Kurti", price: "From Rs. 2,800" },
-    { name: "Festive Zari Kurti", price: "From Rs. 3,200" },
-  ],
-  crochet: [
-    { name: "Sunflower Coaster Set", price: "From Rs. 800" },
-    { name: "Crochet Flower Bouquet", price: "From Rs. 1,500" },
-  ],
-};
-
-const ALL_PIECES = Object.entries(PIECES).flatMap(([category, pieces]) =>
-  pieces.map((piece) => ({ ...piece, category }))
-);
-
 const TESTIMONIALS = [
   { quote: "Placeholder — swap in a real quote from your Feedback highlight.", name: "Customer name" },
   { quote: "Placeholder — swap in a real quote from your Feedback highlight.", name: "Customer name" },
@@ -109,7 +85,6 @@ export function FadeImage({ src, alt, className = "" }) {
       className={className}
       style={{
         width: "100%",
-        height: "100%",
         objectFit: "cover",
         display: "block",
         opacity: loaded ? 1 : 0,
@@ -278,6 +253,8 @@ export default function MimaCreationsSite() {
   const [submitted, setSubmitted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [fade, setFade] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [headerScrolled, setHeaderScrolled] = useState(false);
@@ -302,6 +279,19 @@ export default function MimaCreationsSite() {
       console.error("Could not save favorites:", error);
     }
   }, [favorites]);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      const { data, error } = await supabase.from("products").select("*");
+      if (error) {
+        console.error("Could not load products:", error.message);
+      } else {
+        setProducts(data);
+      }
+      setProductsLoading(false);
+    }
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     function onScroll() {
@@ -331,12 +321,12 @@ export default function MimaCreationsSite() {
 
   // Optimized Search/Filter via useMemo
   const filteredPieces = useMemo(() => {
-    return ALL_PIECES.filter((piece) => {
+    return products.filter((piece) => {
       const matchesCategory = filterCategory === "all" || piece.category === filterCategory;
       const matchesSearch = piece.name.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [searchTerm, filterCategory]);
+  }, [products, searchTerm, filterCategory]);
 
   function nav(targetView, cat = null) {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -657,13 +647,19 @@ export default function MimaCreationsSite() {
               {filteredPieces.length} {filteredPieces.length === 1 ? "piece" : "pieces"} found
             </p>
 
-            {filteredPieces.length > 0 ? (
+            {productsLoading ? (
+              <p style={{ color: INK_SOFT }} className="text-sm">Loading products...</p>
+            ) : filteredPieces.length > 0 ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredPieces.map((piece, i) => (
                   <Reveal key={piece.name} delay={Math.min(i * 0.05, 0.3)}>
                     <div className="card-hover" style={{ border: `1px solid ${CREAM_DARK}`, background: CREAM }}>
                     <div className="relative">
-                      <PlaceholderImage label={piece.name} tall />
+                      {piece.image_url ? (
+                        <FadeImage src={piece.image_url} alt={piece.name} className="h-72" />
+                      ) : (
+                        <PlaceholderImage label={piece.name} tall />
+                      )}
                       <button
                         onClick={() => toggleFavorite(piece.name)}
                         aria-label={`${favorites.includes(piece.name) ? "Remove" : "Save"} ${piece.name}`}
@@ -725,10 +721,14 @@ export default function MimaCreationsSite() {
             <h2 className="display text-3xl mb-1">{CATEGORIES.find((c) => c.id === activeCategory)?.name}</h2>
             <p className="text-base mb-10 max-w-xl" style={{ color: INK_SOFT }}>{CATEGORIES.find((c) => c.id === activeCategory)?.desc}</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(PIECES[activeCategory] || []).map((p, i) => (
+              {products.filter((p) => p.category === activeCategory).map((p, i) => (
                 <Reveal key={i} delay={Math.min(i * 0.06, 0.3)}>
                   <div className="card-hover" style={{ border: `1px solid ${CREAM_DARK}` }}>
-                  <PlaceholderImage label={p.name} tall />
+                  {p.image_url ? (
+                    <FadeImage src={p.image_url} alt={p.name} className="h-72" />
+                  ) : (
+                    <PlaceholderImage label={p.name} tall />
+                  )}
                   <div className="p-4">
                     <h3 className="display text-base mb-1">{p.name}</h3>
                     <p className="text-xs mb-3" style={{ color: INK_SOFT }}>{p.price}</p>

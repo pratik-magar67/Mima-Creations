@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { supabase } from "./supabaseClient";
+import { CREAM, INK, INK_SOFT, SAGE_DARK, ROSE, CREAM_DARK } from "./adminTheme";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -17,34 +18,41 @@ export default function AdminLogin() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F6F0E3" }}>
-      <form onSubmit={handleLogin} style={{ background: "#fff", padding: "32px", width: "320px", border: "1px solid #ECE2CC" }}>
-        <h1 style={{ fontSize: "20px", marginBottom: "20px", color: "#2B2620" }}>Mima Creations — Admin</h1>
-        <label style={{ display: "block", marginBottom: "12px" }}>
-          <span style={{ fontSize: "13px", color: "#6B6357" }}>Email</span>
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: CREAM }}>
+      <form onSubmit={handleLogin} className="w-full max-w-sm p-8" style={{ background: "#fff", border: `1px solid ${CREAM_DARK}` }}>
+        <p className="script text-2xl mb-1" style={{ color: ROSE, fontFamily: "'Parisienne', cursive" }}>Mima Creations</p>
+        <h1 className="text-xl mb-6" style={{ color: INK, fontFamily: "'Playfair Display', serif" }}>Admin sign in</h1>
+
+        <label className="block mb-4">
+          <span className="text-xs" style={{ color: INK_SOFT }}>Email</span>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={{ width: "100%", marginTop: "4px", padding: "8px", border: "1px solid #ccc" }}
+            className="w-full mt-1 p-2 border text-sm"
+            style={{ borderColor: CREAM_DARK }}
           />
         </label>
-        <label style={{ display: "block", marginBottom: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#6B6357" }}>Password</span>
+        <label className="block mb-5">
+          <span className="text-xs" style={{ color: INK_SOFT }}>Password</span>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%", marginTop: "4px", padding: "8px", border: "1px solid #ccc" }}
+            className="w-full mt-1 p-2 border text-sm"
+            style={{ borderColor: CREAM_DARK }}
           />
         </label>
-        {error && <p style={{ color: "#B3261E", fontSize: "13px", marginBottom: "12px" }}>{error}</p>}
+
+        {error && <p className="text-sm mb-4" style={{ color: "#B3261E" }}>{error}</p>}
+
         <button
           type="submit"
           disabled={loading}
-          style={{ width: "100%", padding: "10px", background: "#5F7A5C", color: "#fff", border: "none" }}
+          className="w-full py-2.5 text-sm"
+          style={{ background: SAGE_DARK, color: CREAM }}
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>

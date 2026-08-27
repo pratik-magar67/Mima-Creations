@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import AdminLogin from "./AdminLogin";
+import EnquiriesTab from "./EnquiriesTab";
+import ProductsTab from "./ProductsTab";
+import { CREAM, CREAM_DARK, INK, INK_SOFT, SAGE_DARK, ROSE } from "./adminTheme";
 
 export default function AdminDashboard() {
   const [session, setSession] = useState(null);
   const [checking, setChecking] = useState(true);
+  const [tab, setTab] = useState("enquiries");
+  const [newEnquiryCount, setNewEnquiryCount] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -19,21 +24,70 @@ export default function AdminDashboard() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!session) return;
+    async function fetchCount() {
+      const { count } = await supabase
+        .from("enquiries")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "new");
+      setNewEnquiryCount(count || 0);
+    }
+    fetchCount();
+  }, [session, tab]);
+
   if (checking) return null;
   if (!session) return <AdminLogin />;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F6F0E3", padding: "32px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h1 style={{ fontSize: "22px", color: "#2B2620" }}>Mima Creations — Dashboard</h1>
-        <button
-          onClick={() => supabase.auth.signOut()}
-          style={{ padding: "8px 16px", background: "#ECE2CC", border: "none", fontSize: "13px" }}
-        >
-          Sign out
-        </button>
+    <div className="min-h-screen" style={{ background: CREAM }}>
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 md:px-10 py-4 border-b" style={{ borderColor: CREAM_DARK, background: "#fff" }}>
+        <div>
+          <p className="script text-lg leading-none" style={{ color: ROSE, fontFamily: "'Parisienne', cursive" }}>Mima Creations</p>
+          <p className="text-sm" style={{ color: INK, fontFamily: "'Playfair Display', serif" }}>Admin dashboard</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-xs hidden sm:block" style={{ color: INK_SOFT }}>{session.user.email}</span>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="text-xs px-4 py-2"
+            style={{ background: CREAM_DARK, color: INK }}
+          >
+            Sign out
+          </button>
+        </div>
+      </header>
+
+      <div className="px-6 md:px-10 pt-6">
+        <div className="flex gap-2 mb-6">
+          {[["enquiries", "Enquiries"], ["products", "Products"]].map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className="text-sm px-5 py-2 flex items-center gap-2"
+              style={{
+                background: tab === id ? SAGE_DARK : "#fff",
+                color: tab === id ? CREAM : INK_SOFT,
+                border: `1px solid ${tab === id ? SAGE_DARK : CREAM_DARK}`,
+              }}
+            >
+              {label}
+              {id === "enquiries" && newEnquiryCount > 0 && (
+                <span
+                  className="text-xs px-1.5 py-0.5"
+                  style={{ background: ROSE, color: CREAM }}
+                >
+                  {newEnquiryCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div className="pb-16">
+          {tab === "enquiries" ? <EnquiriesTab /> : <ProductsTab />}
+        </div>
       </div>
-      <p style={{ color: "#6B6357" }}>Logged in as {session.user.email}. Enquiries and Products tabs go here next.</p>
     </div>
   );
 }
