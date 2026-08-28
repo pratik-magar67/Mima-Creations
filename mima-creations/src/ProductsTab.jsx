@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import Toast from "./Toast";
 import ConfirmDialog from "./ConfirmDialog";
+import CropModal from "./CropModal";
 
 const CATEGORY_OPTIONS = ["sarees", "dresses", "kurtis", "crochet"];
 
@@ -25,6 +26,7 @@ export default function ProductsTab() {
   const [saving, setSaving] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [cropSource, setCropSource] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: "" });
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null, imageUrl: null });
@@ -52,15 +54,25 @@ export default function ProductsTab() {
 
   function handleFileChange(e) {
     const file = e.target.files[0] || null;
-    setImageFile(file);
+    if (!file) return;
 
+    const objectUrl = URL.createObjectURL(file);
+    setCropSource({ src: objectUrl, fileName: file.name });
+    e.target.value = "";
+  }
+
+  function handleCropConfirm(croppedFile) {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (cropSource) URL.revokeObjectURL(cropSource.src);
 
-    if (file) {
-      setPreviewUrl(URL.createObjectURL(file));
-    } else {
-      setPreviewUrl(null);
-    }
+    setImageFile(croppedFile);
+    setPreviewUrl(URL.createObjectURL(croppedFile));
+    setCropSource(null);
+  }
+
+  function handleCropCancel() {
+    if (cropSource) URL.revokeObjectURL(cropSource.src);
+    setCropSource(null);
   }
 
   function showToast(message) {
@@ -249,6 +261,14 @@ export default function ProductsTab() {
           </div>
         ))}
       </div>
+      {cropSource && (
+        <CropModal
+          imageSrc={cropSource.src}
+          fileName={cropSource.fileName}
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
+        />
+      )}
       <ConfirmDialog
         open={confirmDelete.open}
         title="Delete this product?"
