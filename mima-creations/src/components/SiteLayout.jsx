@@ -7,6 +7,7 @@ Mail,
 import {
 Link,
 useLocation,
+useNavigate,
 } from "react-router-dom";
 
 import {
@@ -24,6 +25,7 @@ ScrollToTopButton,
 
 export default function SiteLayout({ children }) {
 const location = useLocation();
+const navigate = useNavigate();
 
 const [menuOpen, setMenuOpen] = useState(false);
 const [scrolled, setScrolled] = useState(false);
@@ -63,37 +65,31 @@ return () => {
 }, []);
 
 const navLinks = [
-{
-path: "/home",
-label: "Home",
-},
-{
-path: "/shop",
-label: "Shop",
-},
-{
-path: "/about",
-label: "About",
-},
-{
-path: "/feedback",
-label: "Feedback",
-},
-{
-path: "/contact",
-label: "Contact",
-},
+["home", "Home"],
+["shop", "Shop"],
+["about", "About"],
+["feedback", "Feedback"],
+["contact", "Contact"],
 ];
 
+const mobileNavLinks = [...navLinks, ["enquiry", "Enquiry"]];
+
+function nav(id) {
+const path = id === "home" ? "/home" : `/${id}`;
+setMenuOpen(false);
+navigate(path);
+}
+
 function isActive(path) {
-if (path === "/home") {
+const target = path === "home" ? "/home" : `/${path}`;
+if (path === "home") {
 return (
 location.pathname === "/" ||
 location.pathname === "/home"
 );
 }
 
-return location.pathname.startsWith(path);
+return location.pathname.startsWith(target);
 
 }
 
@@ -150,22 +146,30 @@ fontFamily: "'Jost', sans-serif",
           0 10px 24px rgba(43, 38, 32, 0.08);
       }
 
-      @keyframes slideDown {
-        from {
-          opacity: 0;
-          transform: translateY(-8px);
-        }
-
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      .mobile-menu-panel {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.35s ease;
+        overflow: hidden;
+        border-bottom: 1px solid transparent;
       }
-
-      .mobile-menu-enter {
-        animation: slideDown 0.25s ease;
+      .mobile-menu-panel.open {
+        grid-template-rows: 1fr;
+        border-bottom: 1px solid ${CREAM_DARK};
       }
-
+      .mobile-menu-panel-inner {
+        min-height: 0;
+        overflow: hidden;
+      }
+      .mobile-nav-link {
+        opacity: 0;
+        transform: translateY(-6px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      .mobile-menu-panel.open .mobile-nav-link {
+        opacity: 1;
+        transform: translateY(0);
+      }
       @media (min-width: 768px) {
         .scroll-top-btn {
           bottom: 24px !important;
@@ -191,9 +195,7 @@ fontFamily: "'Jost', sans-serif",
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .mobile-menu-enter {
-          animation: none;
-        }
+        .mobile-menu-panel, .mobile-nav-link { transition: none; }
 
         .card-hover:hover {
           transform: none;
@@ -260,28 +262,27 @@ fontFamily: "'Jost', sans-serif",
         color: INK_SOFT,
       }}
     >
-      {navLinks.map(
-        (link) => (
+      {navLinks.map(([id, label]) => { 
+        const path = id === "home" ? "/home" : `/${id}`;
+        return (
           <Link
-            key={link.path}
-            to={link.path}
+            key={id}
+            to={path}
             className={
-              isActive(link.path)
+              isActive(id)
                 ? "font-medium"
                 : ""
             }
             style={{
-              color: isActive(
-                link.path
-              )
+              color: isActive(id)
                 ? INK
                 : INK_SOFT,
             }}
           >
-            {link.label}
+            {label}
           </Link>
-        )
-      )}
+        );
+      })}
     </nav>
 
     <div className="flex items-center gap-3">
@@ -317,51 +318,26 @@ fontFamily: "'Jost', sans-serif",
     </div>
   </header>
 
-  {menuOpen && (
-    <div
-      className="md:hidden flex flex-col px-6 py-4 gap-3 border-b mobile-menu-enter"
-      style={{
-        background: CREAM,
-        borderColor: CREAM_DARK,
-      }}
-    >
-      {navLinks.map(
-        (link) => (
-          <Link
-            key={link.path}
-            to={link.path}
-            className="text-left text-sm py-1"
+  <div className={`md:hidden mobile-menu-panel ${menuOpen ? "open" : ""}`} style={{ background: CREAM }}>
+    <div className="mobile-menu-panel-inner">
+      <div className="flex flex-col px-6 py-4">
+        {mobileNavLinks.map(([id, label], i) => (
+          <button
+            key={id}
+            onClick={() => nav(id)}
+            className="mobile-nav-link text-left text-base py-2.5"
             style={{
-              color: isActive(
-                link.path
-              )
-                ? INK
-                : INK_SOFT,
+              color: id === "enquiry" ? ROSE : INK,
+              fontWeight: id === "enquiry" ? 600 : 400,
+              transitionDelay: menuOpen ? `${i * 0.04}s` : "0s",
             }}
-            onClick={() =>
-              setMenuOpen(false)
-            }
           >
-            {link.label}
-          </Link>
-        )
-      )}
-
-      <Link
-        to="/enquiry"
-        onClick={() =>
-          setMenuOpen(false)
-        }
-        className="btn text-sm px-5 py-2 mt-1 w-fit"
-        style={{
-          background: SAGE_DARK,
-          color: CREAM,
-        }}
-      >
-        Enquire
-      </Link>
+            {label}
+          </button>
+        ))}
+      </div>
     </div>
-  )}
+  </div>
 
   <main className="flex-1 pb-20 md:pb-0">
     {children}
