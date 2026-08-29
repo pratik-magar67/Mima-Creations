@@ -75,6 +75,11 @@ export default function ProductsTab() {
     setCropSource(null);
   }
 
+  function handleCropExisting(url) {
+    const fileName = url.split("/").pop().split("?")[0] || "cropped.jpg";
+    setCropSource({ src: url, fileName });
+  }
+
   function showToast(message) {
     setToast({ visible: true, message });
     setTimeout(() => setToast({ visible: false, message: "" }), 2500);
@@ -235,12 +240,28 @@ export default function ProductsTab() {
             <div style={{ marginTop: "8px" }}>
               <img src={previewUrl} alt="Preview" style={{ width: "96px", height: "96px", objectFit: "cover", border: `1px solid ${CREAM_DARK}` }} />
               <p style={{ fontSize: "12px", color: INK_SOFT }}>{imageFile.name}</p>
+              <button
+                type="button"
+                onClick={() => setCropSource({ src: previewUrl, fileName: imageFile.name })}
+                className="text-xs px-3 py-1.5 mt-2"
+                style={{ background: CREAM_DARK, color: INK, border: "none" }}
+              >
+                Re-crop
+              </button>
             </div>
           )}
           {!previewUrl && form.image_url && (
             <div style={{ marginTop: "8px" }}>
               <img src={form.image_url} alt="Current" style={{ width: "96px", height: "96px", objectFit: "cover", border: `1px solid ${CREAM_DARK}` }} />
               <p style={{ fontSize: "12px", color: INK_SOFT }}>Current photo (upload a new one to replace it)</p>
+              <button
+                type="button"
+                onClick={() => handleCropExisting(form.image_url)}
+                className="text-xs px-3 py-1.5 mt-2"
+                style={{ background: CREAM_DARK, color: INK, border: "none" }}
+              >
+                Crop this photo
+              </button>
             </div>
           )}
         </div>
