@@ -24,8 +24,8 @@ export default function Home() {
     <>
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <Reveal className="grid md:grid-cols-[1.1fr_1fr] items-stretch">
-          <div className="px-6 md:px-12 py-16 md:py-24 flex flex-col justify-center order-2 md:order-1">
+        <Reveal className="grid md:grid-cols-[1.1fr_1fr] items-start md:items-stretch">
+          <div className="px-6 md:px-12 py-10 md:py-24 flex flex-col justify-center order-2 md:order-1">
             <svg
               aria-hidden="true"
               width="220"
@@ -83,7 +83,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="order-1 md:order-2 h-64 md:h-auto">
+          <div className="order-1 md:order-2 h-56 sm:h-64 md:h-auto">
             <PlaceholderImage
               label="Replace with a hero photo — an embroidered blouse or saree works best"
               fill
@@ -92,16 +92,18 @@ export default function Home() {
         </Reveal>
       </section>
 
-      <StitchDivider />
+      <div style={{ paddingTop: "150px", paddingBottom: "8px" }}>
+        <StitchDivider />
+      </div>
 
       {/* CATEGORIES */}
       <section
-        className="fabric-texture px-6 md:px-12 py-20"
+        className="fabric-texture px-6 md:px-12 py-24 md:py-28"
         style={{ background: SAGE_LIGHT }}
       >
         <Reveal>
           <h2
-            className="display text-3xl mb-8 text-center"
+            className="display text-3xl mb-10 text-center"
             style={{
               color: INK,
               letterSpacing: "0.01em",
@@ -110,7 +112,7 @@ export default function Home() {
             What we make
           </h2>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 max-w-7xl mx-auto">
             {CATEGORIES.map((category, index) => (
               <Reveal
                 key={category.id}
@@ -124,26 +126,26 @@ export default function Home() {
                     border: `1px solid ${SAGE}`,
                   }}
                 >
-                  <PlaceholderImage label={category.name} />
+                  <PlaceholderImage label={category.name} tall />
 
-                  <div className="p-4">
-                    <h3 className="display text-base mb-1">
+                  <div className="p-5">
+                    <h3 className="display text-lg mb-2">
                       {category.name}
                     </h3>
 
                     <p
-                      className="text-xs"
+                      className="text-sm"
                       style={{ color: INK_SOFT }}
                     >
                       {category.desc}
                     </p>
 
                     <span
-                      className="inline-flex items-center gap-1 text-xs mt-3"
+                      className="inline-flex items-center gap-1 text-sm mt-4"
                       style={{ color: SAGE_DARK }}
                     >
                       View pieces
-                      <ChevronRight size={14} />
+                      <ChevronRight size={16} />
                     </span>
                   </div>
                 </Link>
