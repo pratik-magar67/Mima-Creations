@@ -132,7 +132,7 @@ export default function Category() {
         </p>
       ) : products.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product, index) => (
+          {products.filter((p) => p.category === categoryId && p.available !== false).map((product, index) => (
             <Reveal
               key={product.id || product.name}
               delay={Math.min(index * 0.06, 0.3)}

@@ -1,0 +1,90 @@
+import React, { useState, useEffect } from "react";
+import { supabase } from "./supabaseClient";
+import { CREAM_DARK, INK, INK_SOFT, SAGE_DARK, SAGE_LIGHT, ROSE } from "./adminTheme";
+
+function StatCard({ label, value, accent }) {
+  return (
+    <div className="p-5" style={{ background: "#fff", border: `1px solid ${CREAM_DARK}` }}>
+      <p className="text-xs uppercase tracking-wide mb-2" style={{ color: INK_SOFT, letterSpacing: "0.08em" }}>
+        {label}
+      </p>
+      <p className="text-3xl" style={{ color: accent || INK, fontFamily: "'Playfair Display', serif" }}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+export default function DashboardTab({ onNavigate }) {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    pendingEnquiries: 0,
+    completedOrders: 0,
+    newCount: 0,
+    contactedCount: 0,
+    inProgressCount: 0,
+  });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  async function fetchStats() {
+    setLoading(true);
+
+    const { count: totalProducts } = await supabase
+      .from("products")
+      .select("*", { count: "exact", head: true });
+
+    const { data: enquiries } = await supabase.from("enquiries").select("status");
+
+    // Treat any legacy "done" values from before this update as "completed"
+    const normalized = (enquiries || []).map((e) => {
+      const s = e.status || "new";
+      return s === "done" ? "completed" : s;
+    });
+
+    const newCount = normalized.filter((s) => s === "new").length;
+    const contactedCount = normalized.filter((s) => s === "contacted").length;
+    const inProgressCount = normalized.filter((s) => s === "in_progress").length;
+    const completedOrders = normalized.filter((s) => s === "completed").length;
+
+    setStats({
+      totalProducts: totalProducts || 0,
+      pendingEnquiries: newCount + contactedCount + inProgressCount,
+      completedOrders,
+      newCount,
+      contactedCount,
+      inProgressCount,
+    });
+    setLoading(false);
+  }
+
+  if (loading) return <p className="text-sm" style={{ color: INK_SOFT }}>Loading dashboard...</p>;
+
+  return (
+    <div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <StatCard label="Total Products" value={stats.totalProducts} />
+        <StatCard label="Pending Enquiries" value={stats.pendingEnquiries} accent={ROSE} />
+        <StatCard label="Completed Orders" value={stats.completedOrders} accent={SAGE_DARK} />
+      </div>
+
+      <div className="grid sm:grid-cols-3 gap-4 mb-8">
+        <StatCard label="New" value={stats.newCount} />
+        <StatCard label="Contacted" value={stats.contactedCount} />
+        <StatCard label="In Progress" value={stats.inProgressCount} />
+      </div>
+
+      <div className="flex gap-3">
+        <button onClick={() => onNavigate("enquiries")} className="text-sm px-5 py-2" style={{ background: SAGE_DARK, color: "#F6F0E3" }}>
+          View enquiries
+        </button>
+        <button onClick={() => onNavigate("products")} className="text-sm px-5 py-2" style={{ background: CREAM_DARK, color: INK }}>
+          Manage products
+        </button>
+      </div>
+    </div>
+  );
+}

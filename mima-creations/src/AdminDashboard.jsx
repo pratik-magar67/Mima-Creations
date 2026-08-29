@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import AdminLogin from "./AdminLogin";
+import DashboardTab from "./DashboardTab";
 import EnquiriesTab from "./EnquiriesTab";
 import ProductsTab from "./ProductsTab";
 import { CREAM, CREAM_DARK, INK, INK_SOFT, SAGE_DARK, ROSE } from "./adminTheme";
@@ -8,7 +9,7 @@ import { CREAM, CREAM_DARK, INK, INK_SOFT, SAGE_DARK, ROSE } from "./adminTheme"
 export default function AdminDashboard() {
   const [session, setSession] = useState(null);
   const [checking, setChecking] = useState(true);
-  const [tab, setTab] = useState("enquiries");
+  const [tab, setTab] = useState("dashboard");
   const [newEnquiryCount, setNewEnquiryCount] = useState(0);
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export default function AdminDashboard() {
 
       <div className="px-6 md:px-10 pt-6">
         <div className="flex gap-2 mb-6">
-          {[["enquiries", "Enquiries"], ["products", "Products"]].map(([id, label]) => (
+          {[["dashboard", "Dashboard"], ["enquiries", "Enquiries"], ["products", "Products"]].map(([id, label]) => (
             <button
               key={id}
               onClick={() => setTab(id)}
@@ -85,7 +86,9 @@ export default function AdminDashboard() {
         </div>
 
         <div className="pb-16">
-          {tab === "enquiries" ? <EnquiriesTab /> : <ProductsTab />}
+          {tab === "dashboard" && <DashboardTab onNavigate={setTab} />}
+          {tab === "enquiries" && <EnquiriesTab />}
+          {tab === "products" && <ProductsTab />}
         </div>
       </div>
     </div>

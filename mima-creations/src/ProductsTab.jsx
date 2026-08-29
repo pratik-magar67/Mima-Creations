@@ -7,7 +7,7 @@ import CropModal from "./CropModal";
 
 const CATEGORY_OPTIONS = ["sarees", "dresses", "kurtis", "crochet"];
 
-const emptyForm = { name: "", category: "sarees", price: "", description: "", image_url: "" };
+const emptyForm = { name: "", category: "sarees", price: "", description: "", image_url: "", available: true };
 
 function getStoragePathFromUrl(url) {
   if (!url) return null;
@@ -90,6 +90,7 @@ export default function ProductsTab() {
       price: product.price,
       description: product.description || "",
       image_url: product.image_url || "",
+      available: product.available !== false,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -162,6 +163,17 @@ export default function ProductsTab() {
     setSaving(false);
   }
 
+  async function toggleAvailability(id, available) {
+    setProducts((current) => current.map((p) => (p.id === id ? { ...p, available } : p)));
+    const { error } = await supabase.from("products").update({ available }).eq("id", id);
+    if (error) {
+      console.error("Could not update availability:", error.message);
+      fetchProducts();
+    } else {
+      showToast(available ? "Marked available" : "Marked unavailable");
+    }
+  }
+
   function handleDelete(id, imageUrl) {
     setConfirmDelete({ open: true, id, imageUrl });
   }
@@ -204,6 +216,15 @@ export default function ProductsTab() {
           <input required name="price" value={form.price} onChange={handleChange} placeholder="Price, e.g. From Rs. 3,500" style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }} />
         </div>
         <textarea name="description" value={form.description} onChange={handleChange} placeholder="Description" rows={2} style={{ width: "100%", padding: "8px", border: "1px solid #ccc", marginBottom: "12px" }} />
+
+        <label className="flex items-center gap-2 mb-3 text-sm" style={{ color: INK }}>
+          <input
+            type="checkbox"
+            checked={form.available !== false}
+            onChange={(e) => setForm((f) => ({ ...f, available: e.target.checked }))}
+          />
+          Available for enquiries
+        </label>
 
         <div style={{ marginBottom: "12px" }}>
           <label style={{ display: "block", fontSize: "13px", color: "#6B6357", marginBottom: "6px" }}>
@@ -254,7 +275,17 @@ export default function ProductsTab() {
                 <p style={{ fontSize: "13px", color: "#6B6357" }}>{p.category} · {p.price}</p>
               </div>
             </div>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div className="flex gap-2 items-center">
+              {p.available === false && (
+                <span className="text-xs px-2 py-1" style={{ background: "#EDEDED", color: INK_SOFT }}>Unavailable</span>
+              )}
+              <button
+                onClick={() => toggleAvailability(p.id, p.available === false)}
+                className="text-xs px-3 py-1.5"
+                style={{ background: CREAM_DARK, color: INK }}
+              >
+                {p.available === false ? "Mark available" : "Mark unavailable"}
+              </button>
               <button onClick={() => startEdit(p)} style={{ padding: "6px 12px", background: "#ECE2CC", border: "none", fontSize: "13px" }}>Edit</button>
               <button onClick={() => handleDelete(p.id, p.image_url)} style={{ padding: "6px 12px", background: "#B3261E", color: "#fff", border: "none", fontSize: "13px" }}>Delete</button>
             </div>

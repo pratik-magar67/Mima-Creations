@@ -85,7 +85,8 @@ export default function Shop() {
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase());
 
-      return matchesCategory && matchesSearch;
+      const isAvailable = piece.available !== false;
+      return matchesCategory && matchesSearch && isAvailable;
     });
   }, [
     products,
