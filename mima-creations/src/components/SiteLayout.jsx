@@ -222,119 +222,116 @@ fontFamily: "'Jost', sans-serif",
     `}
   </style>
 
-  <header
-    className="flex items-center justify-between px-6 md:px-12 py-4 sticky top-0 z-10"
+  <div
+    className="sticky top-0 z-20"
     style={{
-      background: CREAM,
-      borderBottom:
-        "1px solid " +
-        (headerScrolled
-          ? CREAM_DARK
-          : "transparent"),
-      boxShadow: headerScrolled
-        ? "0 4px 16px rgba(43,38,32,0.06)"
-        : "none",
-      transition:
-        "box-shadow 0.3s ease, border-color 0.3s ease",
+      background: headerScrolled ? "rgba(246, 240, 227, 0.85)" : CREAM,
+      backdropFilter: headerScrolled ? "blur(10px)" : "none",
+      WebkitBackdropFilter: headerScrolled ? "blur(10px)" : "none",
+      borderBottom: `1px solid ${headerScrolled ? "rgba(236, 226, 204, 0.6)" : "transparent"}`,
+      boxShadow: headerScrolled ? "0 4px 20px rgba(43,38,32,0.08)" : "none",
+      transition: "background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
     }}
   >
-    <Link
-      to="/home"
-      className="flex items-center gap-4"
-      aria-label="Mima Creations home"
-    >
-      <Logo size={60} />
-
-      <span
-        className="block display text-base sm:text-xl"
-        style={{
-          color: INK,
-          letterSpacing: "0.01em",
-        }}
-      >
-        Mima Creations
-      </span>
-    </Link>
-
-    <nav
-      className="hidden md:flex items-center gap-7 text-sm"
-      style={{
-        color: INK_SOFT,
-      }}
-    >
-      {navLinks.map(([id, label]) => { 
-        const path = id === "home" ? "/home" : `/${id}`;
-        return (
-          <Link
-            key={id}
-            to={path}
-            className={
-              isActive(id)
-                ? "font-medium"
-                : ""
-            }
-            style={{
-              color: isActive(id)
-                ? INK
-                : INK_SOFT,
-            }}
-          >
-            {label}
-          </Link>
-        );
-      })}
-    </nav>
-
-    <div className="flex items-center gap-3">
+    <header className="flex items-center justify-between px-6 md:px-12 py-4">
       <Link
-        to="/enquiry"
-        className="btn hidden sm:inline-block text-sm px-5 py-2"
-        style={{
-          background: SAGE_DARK,
-          color: CREAM,
-        }}
+        to="/home"
+        className="flex items-center gap-4"
+        aria-label="Mima Creations home"
       >
-        Enquire
+        <Logo size={60} />
+
+        <span
+          className="block display text-base sm:text-xl"
+          style={{
+            color: INK,
+            letterSpacing: "0.01em",
+          }}
+        >
+          Mima Creations
+        </span>
       </Link>
 
-      <button
-        type="button"
-        className="md:hidden"
-        onClick={() =>
-          setMenuOpen(
-            (current) =>
-              !current
-          )
-        }
-        aria-label="Toggle navigation menu"
-        aria-expanded={menuOpen}
+      <nav
+        className="hidden md:flex items-center gap-7 text-sm"
+        style={{
+          color: INK_SOFT,
+        }}
       >
-        {menuOpen ? (
-          <X size={22} />
-        ) : (
-          <Menu size={22} />
-        )}
-      </button>
-    </div>
-  </header>
+        {navLinks.map(([id, label]) => {
+          const path = id === "home" ? "/home" : `/${id}`;
+          return (
+            <Link
+              key={id}
+              to={path}
+              className={
+                isActive(id)
+                  ? "font-medium"
+                  : ""
+              }
+              style={{
+                color: isActive(id)
+                  ? INK
+                  : INK_SOFT,
+              }}
+            >
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
 
-  <div className={`md:hidden mobile-menu-panel ${menuOpen ? "open" : ""}`} style={{ background: CREAM }}>
-    <div className="mobile-menu-panel-inner">
-      <div className="flex flex-col px-6 py-4">
-        {mobileNavLinks.map(([id, label], i) => (
-          <button
-            key={id}
-            onClick={() => nav(id)}
-            className="mobile-nav-link text-left text-base py-2.5"
-            style={{
-              color: id === "enquiry" ? ROSE : INK,
-              fontWeight: id === "enquiry" ? 600 : 400,
-              transitionDelay: menuOpen ? `${i * 0.04}s` : "0s",
-            }}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="flex items-center gap-3">
+        <Link
+          to="/enquiry"
+          className="btn hidden sm:inline-block text-sm px-5 py-2"
+          style={{
+            background: SAGE_DARK,
+            color: CREAM,
+          }}
+        >
+          Enquire
+        </Link>
+
+        <button
+          type="button"
+          className="md:hidden"
+          onClick={() =>
+            setMenuOpen(
+              (current) =>
+                !current
+            )
+          }
+          aria-label="Toggle navigation menu"
+          aria-expanded={menuOpen}
+        >
+          {menuOpen ? (
+            <X size={22} />
+          ) : (
+            <Menu size={22} />
+          )}
+        </button>
+      </div>
+    </header>
+
+    <div className={`md:hidden mobile-menu-panel ${menuOpen ? "open" : ""}`}>
+      <div className="mobile-menu-panel-inner">
+        <div className="flex flex-col px-6 py-4" style={{ background: CREAM }}>
+          {mobileNavLinks.map(([id, label], i) => (
+            <button
+              key={id}
+              onClick={() => nav(id)}
+              className="mobile-nav-link text-left text-base py-2.5"
+              style={{
+                color: id === "enquiry" ? ROSE : INK,
+                fontWeight: id === "enquiry" ? 600 : 400,
+                transitionDelay: menuOpen ? `${i * 0.04}s` : "0s",
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   </div>
