@@ -143,34 +143,38 @@ export default function Category() {
                   border: `1px solid ${CREAM_DARK}`,
                 }}
               >
-                {product.image_url ? (
-                  <div className="img-zoom-wrap">
-                    <FadeImage
-                      src={product.image_url}
-                      alt={product.name}
-                      className="aspect-[4/5] h-auto"
-                    />
-                  </div>
-                ) : (
-                  <div className="img-zoom-wrap">
-                    <PlaceholderImage
-                      label={product.name}
-                      tall
-                    />
-                  </div>
-                )}
+                <Link to={`/product/${product.id}`} aria-label={`View ${product.name}`}>
+                  {product.image_url ? (
+                    <div className="img-zoom-wrap">
+                      <FadeImage
+                        src={product.image_url}
+                        alt={product.name}
+                        className="aspect-[4/5] h-auto"
+                      />
+                    </div>
+                  ) : (
+                    <div className="img-zoom-wrap">
+                      <PlaceholderImage
+                        label={product.name}
+                        tall
+                      />
+                    </div>
+                  )}
+                </Link>
 
                 <div className="p-4">
-                  <h3 className="display text-base mb-1">
-                    {product.name}
-                  </h3>
+                  <Link to={`/product/${product.id}`} className="block">
+                    <h3 className="display text-base mb-1">
+                      {product.name}
+                    </h3>
 
-                  <p
-                    className="text-xs mb-3"
-                    style={{ color: INK_SOFT }}
-                  >
-                    {product.price}
-                  </p>
+                    <p
+                      className="text-xs mb-3"
+                      style={{ color: INK_SOFT }}
+                    >
+                      {product.price}
+                    </p>
+                  </Link>
 
                   <button
                     onClick={() =>

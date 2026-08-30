@@ -219,22 +219,24 @@ export default function Shop() {
                 }}
               >
                 <div className="relative">
-                  {piece.image_url ? (
-                    <div className="img-zoom-wrap">
-                      <FadeImage
-                        src={piece.image_url}
-                        alt={piece.name}
-                        className="aspect-[4/5] h-auto"
-                      />
-                    </div>
-                  ) : (
-                    <div className="img-zoom-wrap">
-                      <PlaceholderImage
-                        label={piece.name}
-                        tall
-                      />
-                    </div>
-                  )}
+                  <Link to={`/product/${piece.id}`} aria-label={`View ${piece.name}`}>
+                    {piece.image_url ? (
+                      <div className="img-zoom-wrap">
+                        <FadeImage
+                          src={piece.image_url}
+                          alt={piece.name}
+                          className="aspect-[4/5] h-auto"
+                        />
+                      </div>
+                    ) : (
+                      <div className="img-zoom-wrap">
+                        <PlaceholderImage
+                          label={piece.name}
+                          tall
+                        />
+                      </div>
+                    )}
+                  </Link>
 
                   <button
                     onClick={() =>
@@ -275,22 +277,24 @@ export default function Shop() {
                 </div>
 
                 <div className="p-4">
-                  <p
-                    className="eyebrow mb-1"
-                    style={{ color: SAGE_DARK }}
-                  >
-                    {
-                      CATEGORIES.find(
-                        (category) =>
-                          category.id ===
-                          piece.category
-                      )?.name
-                    }
-                  </p>
+                  <Link to={`/product/${piece.id}`} className="block">
+                    <p
+                      className="eyebrow mb-1"
+                      style={{ color: SAGE_DARK }}
+                    >
+                      {
+                        CATEGORIES.find(
+                          (category) =>
+                            category.id ===
+                            piece.category
+                        )?.name
+                      }
+                    </p>
 
-                  <h3 className="display text-base mb-1">
-                    {piece.name}
-                  </h3>
+                    <h3 className="display text-base mb-1">
+                      {piece.name}
+                    </h3>
+                  </Link>
 
                   <p
                     className="text-xs mb-3"
