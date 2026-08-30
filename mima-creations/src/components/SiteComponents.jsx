@@ -125,6 +125,7 @@ export function FadeImage({
 src,
 alt,
 className = "",
+priority = false,
 }) {
 const [loaded, setLoaded] = useState(false);
 
@@ -134,6 +135,8 @@ src={src}
 alt={alt}
 onLoad={() => setLoaded(true)}
 className={className}
+loading={priority ? "eager" : "lazy"}
+decoding="async"
 style={{
 width: "100%",
 objectFit: "cover",
