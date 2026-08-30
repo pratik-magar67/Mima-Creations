@@ -150,6 +150,48 @@ transition:
 );
 }
 
+export function LoadingState({ message = "Loading..." }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div
+        className="mb-4"
+        style={{
+          width: "28px",
+          height: "28px",
+          border: `2px solid ${CREAM_DARK}`,
+          borderTopColor: SAGE_DARK,
+          borderRadius: "50%",
+          animation: "spin 0.8s linear infinite",
+        }}
+      />
+      <p className="text-sm" style={{ color: INK_SOFT }}>{message}</p>
+    </div>
+  );
+}
+
+export function ErrorState({
+  message = "Something went wrong.",
+  onRetry,
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <p className="display text-xl mb-2" style={{ color: INK }}>{message}</p>
+      <p className="text-sm mb-5" style={{ color: INK_SOFT }}>
+        Please check your connection and try again.
+      </p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="btn text-sm px-6 py-3"
+          style={{ background: SAGE_DARK, color: CREAM }}
+        >
+          Try again
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function FadeInOnMount({ children, delay = 0, className = "" }) {
 const [visible, setVisible] = useState(false);
 

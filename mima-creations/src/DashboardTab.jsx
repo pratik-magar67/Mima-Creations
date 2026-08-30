@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { CREAM_DARK, INK, INK_SOFT, SAGE_DARK, SAGE_LIGHT, ROSE } from "./adminTheme";
+import { AdminLoadingState, AdminErrorState } from "./AdminStateViews";
 
 function StatCard({ label, value, accent }) {
   return (
@@ -17,6 +18,7 @@ function StatCard({ label, value, accent }) {
 
 export default function DashboardTab({ onNavigate }) {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [stats, setStats] = useState({
     totalProducts: 0,
     pendingEnquiries: 0,
@@ -32,12 +34,20 @@ export default function DashboardTab({ onNavigate }) {
 
   async function fetchStats() {
     setLoading(true);
+    setError(false);
 
-    const { count: totalProducts } = await supabase
+    const { count: totalProducts, error: productsError } = await supabase
       .from("products")
       .select("*", { count: "exact", head: true });
 
-    const { data: enquiries } = await supabase.from("enquiries").select("status");
+    const { data: enquiries, error: enquiriesError } = await supabase.from("enquiries").select("status");
+
+    if (productsError || enquiriesError) {
+      console.error("Could not load dashboard stats:", (productsError || enquiriesError).message);
+      setError(true);
+      setLoading(false);
+      return;
+    }
 
     // Treat any legacy "done" values from before this update as "completed"
     const normalized = (enquiries || []).map((e) => {
@@ -61,7 +71,8 @@ export default function DashboardTab({ onNavigate }) {
     setLoading(false);
   }
 
-  if (loading) return <p className="text-sm" style={{ color: INK_SOFT }}>Loading dashboard...</p>;
+  if (loading) return <AdminLoadingState message="Loading dashboard..." />;
+  if (error) return <AdminErrorState message="We couldn't load your dashboard." onRetry={fetchStats} />;
 
   return (
     <div>

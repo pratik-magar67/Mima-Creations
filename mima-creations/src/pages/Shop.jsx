@@ -15,12 +15,15 @@ import {
   FadeImage,
   PlaceholderImage,
   Reveal,
+  LoadingState,
+  ErrorState,
 } from "../components/SiteComponents";
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] =
     useState(true);
+  const [productsError, setProductsError] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] =
@@ -51,26 +54,25 @@ export default function Shop() {
     }
   }, [favorites]);
 
-  useEffect(() => {
-    async function fetchProducts() {
-      setProductsLoading(true);
+  async function fetchProducts() {
+    setProductsLoading(true);
+    setProductsError(false);
 
-      const { data, error } = await supabase
-        .from("products")
-        .select("*");
+    const { data, error } = await supabase
+      .from("products")
+      .select("*");
 
-      if (error) {
-        console.error(
-          "Could not load products:",
-          error.message
-        );
-      } else {
-        setProducts(data || []);
-      }
-
-      setProductsLoading(false);
+    if (error) {
+      console.error("Could not load products:", error.message);
+      setProductsError(true);
+    } else {
+      setProducts(data || []);
     }
 
+    setProductsLoading(false);
+  }
+
+  useEffect(() => {
     fetchProducts();
   }, []);
 
@@ -198,12 +200,12 @@ export default function Shop() {
       </p>
 
       {productsLoading ? (
-        <p
-          style={{ color: INK_SOFT }}
-          className="text-sm"
-        >
-          Loading products...
-        </p>
+        <LoadingState message="Loading creations..." />
+      ) : productsError ? (
+        <ErrorState
+          message="We couldn't load the collection."
+          onRetry={fetchProducts}
+        />
       ) : filteredPieces.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPieces.map((piece, index) => (

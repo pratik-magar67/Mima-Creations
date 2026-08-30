@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { CREAM_DARK, INK, INK_SOFT, SAGE_DARK, ROSE } from "./adminTheme";
+import { AdminLoadingState, AdminErrorState } from "./AdminStateViews";
 
 const STATUS_OPTIONS = ["new", "contacted", "in_progress", "completed"];
 
@@ -64,8 +65,8 @@ export default function EnquiriesTab() {
     }
   }
 
-  if (loading) return <p className="text-sm" style={{ color: INK_SOFT }}>Loading enquiries...</p>;
-  if (error) return <p className="text-sm" style={{ color: "#B3261E" }}>Error: {error}</p>;
+  if (loading) return <AdminLoadingState message="Loading enquiries..." />;
+  if (error) return <AdminErrorState message="We couldn't load enquiries." onRetry={fetchEnquiries} />;
   if (enquiries.length === 0) return <p className="text-sm" style={{ color: INK_SOFT }}>No enquiries yet.</p>;
 
   const filteredEnquiries = statusFilter === "all"

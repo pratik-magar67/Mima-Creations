@@ -13,6 +13,8 @@ import {
   FadeImage,
   PlaceholderImage,
   Reveal,
+  LoadingState,
+  ErrorState,
 } from "../components/SiteComponents";
 
 export default function ProductDetail() {
@@ -20,6 +22,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const [related, setRelated] = useState([]);
 
   const [favorites, setFavorites] = useState(() => {
@@ -39,24 +42,31 @@ export default function ProductDetail() {
     }
   }, [favorites]);
 
-  useEffect(() => {
-    async function fetchProduct() {
-      setLoading(true);
-      setNotFound(false);
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", productId)
-        .single();
+  async function fetchProduct() {
+    setLoading(true);
+    setNotFound(false);
+    setFetchError(false);
 
-      if (error || !data) {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", productId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
         setNotFound(true);
-        setProduct(null);
       } else {
-        setProduct(data);
+        setFetchError(true);
       }
-      setLoading(false);
+      setProduct(null);
+    } else {
+      setProduct(data);
     }
+    setLoading(false);
+  }
+
+  useEffect(() => {
     if (productId) fetchProduct();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [productId]);
@@ -87,7 +97,18 @@ export default function ProductDetail() {
   if (loading) {
     return (
       <section className="px-6 md:px-12 py-14 max-w-6xl mx-auto">
-        <p className="text-sm" style={{ color: INK_SOFT }}>Loading...</p>
+        <LoadingState message="Loading creations..." />
+      </section>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <section className="px-6 md:px-12 py-14 max-w-6xl mx-auto">
+        <ErrorState
+          message="We couldn't load this piece."
+          onRetry={fetchProduct}
+        />
       </section>
     );
   }

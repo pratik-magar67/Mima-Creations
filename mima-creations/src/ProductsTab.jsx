@@ -4,6 +4,7 @@ import { supabase } from "./supabaseClient";
 import Toast from "./Toast";
 import ConfirmDialog from "./ConfirmDialog";
 import CropModal from "./CropModal";
+import { AdminLoadingState, AdminErrorState } from "./AdminStateViews";
 
 const CATEGORY_OPTIONS = ["sarees", "dresses", "kurtis", "crochet"];
 
@@ -20,6 +21,7 @@ function getStoragePathFromUrl(url) {
 export default function ProductsTab() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
@@ -37,13 +39,18 @@ export default function ProductsTab() {
 
   async function fetchProducts() {
     setLoading(true);
+    setFetchError(false);
     const { data, error } = await supabase
       .from("products")
       .select("*")
       .order("id", { ascending: false });
 
-    if (error) setError(error.message);
-    else setProducts(data);
+    if (error) {
+      console.error("Could not load products:", error.message);
+      setFetchError(true);
+    } else {
+      setProducts(data);
+    }
     setLoading(false);
   }
 
@@ -280,10 +287,13 @@ export default function ProductsTab() {
         </div>
       </form>
 
-      {loading && <p style={{ color: "#6B6357" }}>Loading products...</p>}
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {products.map((p) => (
+      {loading ? (
+        <AdminLoadingState message="Loading products..." />
+      ) : fetchError ? (
+        <AdminErrorState message="We couldn't load products." onRetry={fetchProducts} />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {products.map((p) => (
           <div key={p.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3" style={{ background: "#fff", border: "1px solid #ECE2CC", padding: "14px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               {p.image_url ? (
@@ -311,8 +321,9 @@ export default function ProductsTab() {
               <button onClick={() => handleDelete(p.id, p.image_url)} style={{ padding: "6px 12px", background: "#B3261E", color: "#fff", border: "none", fontSize: "13px" }}>Delete</button>
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       {cropSource && (
         <CropModal
           imageSrc={cropSource.src}

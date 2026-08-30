@@ -13,6 +13,8 @@ import {
   FadeImage,
   PlaceholderImage,
   Reveal,
+  LoadingState,
+  ErrorState,
 } from "../components/SiteComponents";
 
 export default function Category() {
@@ -21,32 +23,32 @@ export default function Category() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const category = CATEGORIES.find(
     (item) => item.id === categoryId
   );
 
-  useEffect(() => {
-    async function fetchProducts() {
-      setLoading(true);
+  async function fetchProducts() {
+    setLoading(true);
+    setError(false);
 
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("category", categoryId);
+    const { data, error: fetchError } = await supabase
+      .from("products")
+      .select("*")
+      .eq("category", categoryId);
 
-      if (error) {
-        console.error(
-          "Could not load category products:",
-          error.message
-        );
-      } else {
-        setProducts(data || []);
-      }
-
-      setLoading(false);
+    if (fetchError) {
+      console.error("Could not load category products:", fetchError.message);
+      setError(true);
+    } else {
+      setProducts(data || []);
     }
 
+    setLoading(false);
+  }
+
+  useEffect(() => {
     if (category) {
       fetchProducts();
     }
@@ -124,12 +126,12 @@ export default function Category() {
       </p>
 
       {loading ? (
-        <p
-          className="text-sm"
-          style={{ color: INK_SOFT }}
-        >
-          Loading products...
-        </p>
+        <LoadingState message="Loading creations..." />
+      ) : error ? (
+        <ErrorState
+          message="We couldn't load the collection."
+          onRetry={fetchProducts}
+        />
       ) : products.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.filter((p) => p.category === categoryId && p.available !== false).map((product, index) => (
