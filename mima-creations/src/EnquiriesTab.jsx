@@ -18,6 +18,16 @@ const STATUS_COLORS = {
   completed: { bg: "#EDEDED", text: "#6B6357" },
 };
 
+const MEASUREMENT_LABELS = {
+  bust: "Bust",
+  waist: "Waist",
+  hips: "Hips",
+  shoulder: "Shoulder",
+  sleeve: "Sleeve",
+  length: "Length",
+  height: "Height",
+};
+
 function normalizeStatus(status) {
   const s = status || "new";
   return s === "done" ? "completed" : s; // legacy value from before this update
@@ -116,6 +126,33 @@ export default function EnquiriesTab() {
                   <strong style={{ color: INK }}>Budget:</strong> {e.budget || "—"}
                 </p>
                 {e.notes && <p className="text-sm mt-2" style={{ color: INK }}>{e.notes}</p>}
+
+                {e.measurements && Object.keys(e.measurements).length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                    {Object.entries(e.measurements).map(([key, value]) => (
+                      <span key={key} className="text-xs" style={{ color: INK_SOFT }}>
+                        <strong style={{ color: INK }}>{MEASUREMENT_LABELS[key] || key}:</strong> {value}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {e.image_url && (
+                  <a
+                    href={e.image_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-block"
+                  >
+                    <img
+                      src={e.image_url}
+                      alt="Reference photo"
+                      className="w-20 h-20 object-cover"
+                      style={{ border: `1px solid ${CREAM_DARK}` }}
+                    />
+                  </a>
+                )}
+
                 <p className="text-xs mt-3" style={{ color: "#A69C8C" }}>
                   {new Date(e.created_at).toLocaleString()}
                 </p>
