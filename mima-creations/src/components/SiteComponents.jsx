@@ -96,7 +96,7 @@ heightClass = "aspect-[4/5] h-auto";
 const imageClassName =
 "w-full " +
 heightClass +
-" flex flex-col items-center justify-center gap-2";
+" flex flex-col items-center justify-center gap-2 placeholder-fill";
 
 return (
 <div
@@ -141,9 +141,37 @@ display: "block",
 opacity: loaded ? 1 : 0,
 filter: loaded ? "blur(0px)" : "blur(10px)",
 transition:
-"opacity 0.5s ease, filter 0.5s ease",
+"opacity var(--dur-base) var(--ease-elegant), filter var(--dur-base) var(--ease-elegant)",
 }}
 />
+);
+}
+
+export function FadeInOnMount({ children, delay = 0, className = "" }) {
+const [visible, setVisible] = useState(false);
+
+useEffect(() => {
+  const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (prefersReduced) {
+    setVisible(true);
+    return;
+  }
+
+  const t = setTimeout(() => setVisible(true), 50);
+  return () => clearTimeout(t);
+}, []);
+
+return (
+  <div
+    className={className}
+    style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? "translateY(0)" : "translateY(12px)",
+      transition: `opacity var(--dur-slow) var(--ease-elegant) ${delay}s, transform var(--dur-slow) var(--ease-elegant) ${delay}s`,
+    }}
+  >
+    {children}
+  </div>
 );
 }
 
@@ -198,9 +226,9 @@ transform: visible
 ? "translateY(0)"
 : "translateY(16px)",
 transition:
-"opacity 0.6s ease " +
+"opacity var(--dur-slow) var(--ease-elegant) " +
 delay +
-"s, transform 0.6s ease " +
+"s, transform var(--dur-slow) var(--ease-elegant) " +
 delay +
 "s",
 }}

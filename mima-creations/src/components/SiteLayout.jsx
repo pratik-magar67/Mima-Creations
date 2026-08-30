@@ -108,6 +108,21 @@ fontFamily: "'Jost', sans-serif",
 {`
 @import url('https://fonts.googleapis.com/css2?family=Parisienne&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap');
 
+      :root {
+        --ease-elegant: cubic-bezier(0.4, 0, 0.2, 1);
+        --dur-fast: 0.2s;
+        --dur-base: 0.35s;
+        --dur-slow: 0.6s;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+
       .script {
         font-family: 'Parisienne', cursive;
       }
@@ -125,8 +140,8 @@ fontFamily: "'Jost', sans-serif",
 
       .btn {
         transition:
-          transform 0.15s ease,
-          opacity 0.15s ease;
+          transform var(--dur-fast) var(--ease-elegant),
+          opacity var(--dur-fast) var(--ease-elegant);
       }
 
       .btn:hover {
@@ -136,20 +151,30 @@ fontFamily: "'Jost', sans-serif",
 
       .card-hover {
         transition:
-          transform 0.25s ease,
-          box-shadow 0.25s ease;
+          transform var(--dur-base) var(--ease-elegant),
+          box-shadow var(--dur-base) var(--ease-elegant);
       }
 
       .card-hover:hover {
-        transform: translateY(-4px);
+        transform: translateY(-3px);
         box-shadow:
-          0 10px 24px rgba(43, 38, 32, 0.08);
+          0 8px 20px rgba(43, 38, 32, 0.07);
+      }
+
+      .img-zoom-wrap {
+        overflow: hidden;
+      }
+      .img-zoom-wrap img, .img-zoom-wrap .placeholder-fill {
+        transition: transform var(--dur-slow) var(--ease-elegant);
+      }
+      .img-zoom-wrap:hover img, .img-zoom-wrap:hover .placeholder-fill {
+        transform: scale(1.04);
       }
 
       .mobile-menu-panel {
         display: grid;
         grid-template-rows: 0fr;
-        transition: grid-template-rows 0.35s ease;
+        transition: grid-template-rows var(--dur-base) var(--ease-elegant);
         overflow: hidden;
         border-bottom: 1px solid transparent;
       }
@@ -164,7 +189,7 @@ fontFamily: "'Jost', sans-serif",
       .mobile-nav-link {
         opacity: 0;
         transform: translateY(-6px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        transition: opacity var(--dur-base) var(--ease-elegant), transform var(--dur-base) var(--ease-elegant);
       }
       .mobile-menu-panel.open .mobile-nav-link {
         opacity: 1;
@@ -196,6 +221,8 @@ fontFamily: "'Jost', sans-serif",
 
       @media (prefers-reduced-motion: reduce) {
         .mobile-menu-panel, .mobile-nav-link { transition: none; }
+        .img-zoom-wrap img, .img-zoom-wrap .placeholder-fill { transition: none; }
+        .img-zoom-wrap:hover img, .img-zoom-wrap:hover .placeholder-fill { transform: none; }
 
         .card-hover:hover {
           transform: none;
@@ -336,7 +363,7 @@ fontFamily: "'Jost', sans-serif",
     </div>
   </div>
 
-  <main className="flex-1 pb-20 md:pb-0">
+  <main className="flex-1 pb-20 md:pb-0" style={{ opacity: 1, transition: "opacity var(--dur-fast) var(--ease-elegant)" }}>
     {children}
   </main>
 

@@ -16,6 +16,7 @@ import {
   TESTIMONIALS,
   PlaceholderImage,
   Reveal,
+  FadeInOnMount,
   StitchDivider,
 } from "../components/SiteComponents";
 
@@ -24,7 +25,7 @@ export default function Home() {
     <>
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <Reveal className="grid md:grid-cols-[1.1fr_1fr] items-start md:items-stretch">
+        <FadeInOnMount className="grid md:grid-cols-[1.1fr_1fr] items-start md:items-stretch">
           <div className="px-6 md:px-12 py-10 md:py-24 flex flex-col justify-center order-2 md:order-1">
             <svg
               aria-hidden="true"
@@ -89,7 +90,7 @@ export default function Home() {
               fill
             />
           </div>
-        </Reveal>
+        </FadeInOnMount>
       </section>
 
       <div style={{ paddingTop: "150px", paddingBottom: "8px" }}>
@@ -126,7 +127,9 @@ export default function Home() {
                     border: `1px solid ${SAGE}`,
                   }}
                 >
-                  <PlaceholderImage label={category.name} tall />
+                  <div className="img-zoom-wrap">
+                    <PlaceholderImage label={category.name} tall />
+                  </div>
 
                   <div className="p-5">
                     <h3 className="display text-lg mb-2">

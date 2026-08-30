@@ -144,16 +144,20 @@ export default function Category() {
                 }}
               >
                 {product.image_url ? (
-                  <FadeImage
-                    src={product.image_url}
-                    alt={product.name}
-                    className="aspect-[4/5] h-auto"
-                  />
+                  <div className="img-zoom-wrap">
+                    <FadeImage
+                      src={product.image_url}
+                      alt={product.name}
+                      className="aspect-[4/5] h-auto"
+                    />
+                  </div>
                 ) : (
-                  <PlaceholderImage
-                    label={product.name}
-                    tall
-                  />
+                  <div className="img-zoom-wrap">
+                    <PlaceholderImage
+                      label={product.name}
+                      tall
+                    />
+                  </div>
                 )}
 
                 <div className="p-4">

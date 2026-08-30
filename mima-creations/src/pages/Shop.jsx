@@ -220,16 +220,20 @@ export default function Shop() {
               >
                 <div className="relative">
                   {piece.image_url ? (
-                    <FadeImage
-                      src={piece.image_url}
-                      alt={piece.name}
-                      className="aspect-[4/5] h-auto"
-                    />
+                    <div className="img-zoom-wrap">
+                      <FadeImage
+                        src={piece.image_url}
+                        alt={piece.name}
+                        className="aspect-[4/5] h-auto"
+                      />
+                    </div>
                   ) : (
-                    <PlaceholderImage
-                      label={piece.name}
-                      tall
-                    />
+                    <div className="img-zoom-wrap">
+                      <PlaceholderImage
+                        label={piece.name}
+                        tall
+                      />
+                    </div>
                   )}
 
                   <button
