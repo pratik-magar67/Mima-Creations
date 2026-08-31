@@ -128,15 +128,16 @@ export default function Shop() {
           </p>
         </div>
 
-        <span
-          className="text-xs"
+        <Link
+          to="/favorites"
+          className="text-xs hover:underline"
           style={{ color: SAGE_DARK }}
         >
           {favorites.length} saved{" "}
           {favorites.length === 1
             ? "piece"
             : "pieces"}
-        </span>
+        </Link>
       </div>
 
       {/* SEARCH / FILTER */}

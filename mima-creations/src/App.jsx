@@ -9,6 +9,7 @@ const About = lazy(() => import("./pages/About"));
 const Feedback = lazy(() => import("./pages/Feedback"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Enquiry = lazy(() => import("./pages/Enquiry"));
+const Favorites = lazy(() => import("./pages/Favorites"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const NotFound = lazy(() => import("./NotFound"));
 
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/enquiry" element={<Enquiry />} />
+          <Route path="/favorites" element={<Favorites />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
