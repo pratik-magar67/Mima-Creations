@@ -416,6 +416,10 @@ export default function Enquiry() {
           This is a made-to-order piece — I'll confirm details and pricing with you before we
           begin. Prepaid only.
         </p>
+        <p className="text-xs mt-2" style={{ color: INK_SOFT }}>
+          Your information is used only to prepare your custom order and will not be shared
+          with anyone else.
+        </p>
       </form>
     </section>
   );
