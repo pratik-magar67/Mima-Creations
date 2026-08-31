@@ -17,6 +17,8 @@ import {
 } from "../components/SiteComponents";
 
 const WHATSAPP_NUMBER = "9779824203807";
+const COOLDOWN_MS = 60000; // 1 minute between submissions
+const MIN_FILL_TIME_MS = 2500; // reject submissions faster than this
 
 const MEASUREMENT_FIELDS = [
   ["bust", "Bust / Chest"],
@@ -57,6 +59,19 @@ export default function Enquiry() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [formLoadTime] = useState(() => Date.now());
+  const [cooldownActive, setCooldownActive] = useState(false);
+
+  useEffect(() => {
+    try {
+      const lastSubmit = localStorage.getItem("mima_last_enquiry_ts");
+      if (lastSubmit && Date.now() - Number(lastSubmit) < COOLDOWN_MS) {
+        setCooldownActive(true);
+      }
+    } catch {
+      // localStorage unavailable, skip cooldown check
+    }
+  }, []);
 
   useEffect(() => {
     setEnquiry((current) => ({
@@ -112,6 +127,28 @@ export default function Enquiry() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (submitting) return;
+
+    // Honeypot check — if this hidden field has anything in it, it's a bot
+    if (e.target.elements.website?.value) {
+      return;
+    }
+
+    // Timing check — reject implausibly fast submissions
+    if (Date.now() - formLoadTime < MIN_FILL_TIME_MS) {
+      return;
+    }
+
+    // Cooldown check
+    try {
+      const lastSubmit = localStorage.getItem("mima_last_enquiry_ts");
+      if (lastSubmit && Date.now() - Number(lastSubmit) < COOLDOWN_MS) {
+        setCooldownActive(true);
+        return;
+      }
+    } catch {
+      // ignore, proceed without cooldown protection if storage is unavailable
+    }
+
     setSubmitting(true);
     setUploadError("");
 
@@ -166,6 +203,12 @@ export default function Enquiry() {
 
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, "_blank");
 
+      try {
+        localStorage.setItem("mima_last_enquiry_ts", String(Date.now()));
+      } catch {
+        // ignore if storage unavailable
+      }
+
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -210,6 +253,16 @@ export default function Enquiry() {
         style={{ border: `1px solid ${SAGE}`, background: "#E3EBDE" }}
         className="p-6 md:p-8"
       >
+        {/* Honeypot — hidden from real visitors, catches basic bots */}
+        <input
+          type="text"
+          name="website"
+          tabIndex="-1"
+          autoComplete="off"
+          aria-hidden="true"
+          style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
+        />
+
         <div className="grid sm:grid-cols-2 gap-5 mb-5">
           <label className="block">
             <span className="text-xs" style={{ color: INK_SOFT }}>Name</span>
@@ -344,14 +397,20 @@ export default function Enquiry() {
           />
         </label>
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="btn text-sm px-6 py-3 w-full sm:w-auto"
-          style={{ background: ROSE, color: CREAM, opacity: submitting ? 0.6 : 1 }}
-        >
-          {submitting ? "Sending..." : "Send enquiry"}
-        </button>
+        {cooldownActive ? (
+          <p className="text-sm" style={{ color: INK_SOFT }}>
+            You've just sent an enquiry — please wait a moment before sending another.
+          </p>
+        ) : (
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn text-sm px-6 py-3 w-full sm:w-auto"
+            style={{ background: ROSE, color: CREAM, opacity: submitting ? 0.6 : 1 }}
+          >
+            {submitting ? "Sending..." : "Send enquiry"}
+          </button>
+        )}
 
         <p className="text-xs mt-4" style={{ color: INK_SOFT }}>
           This is a made-to-order piece — I'll confirm details and pricing with you before we
