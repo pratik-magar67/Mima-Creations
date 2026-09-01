@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Upload, X } from "lucide-react";
 
 import { supabase } from "../supabaseClient";
+import MeasurementGuide from "../components/MeasurementGuide";
 
 import {
   CREAM,
@@ -329,20 +330,23 @@ export default function Enquiry() {
           </button>
 
           {showMeasurements && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-              {MEASUREMENT_FIELDS.map(([key, label]) => (
-                <label key={key} className="block">
-                  <span className="text-xs" style={{ color: INK_SOFT }}>{label}</span>
-                  <input
-                    value={measurements[key] || ""}
-                    onChange={(e) => handleMeasurementChange(key, e.target.value)}
-                    placeholder="in inches"
-                    className="w-full mt-1 p-2 bg-transparent border text-sm"
-                    style={{ borderColor: "#2B2620" }}
-                  />
-                </label>
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+                {MEASUREMENT_FIELDS.map(([key, label]) => (
+                  <label key={key} className="block">
+                    <span className="text-xs" style={{ color: INK_SOFT }}>{label}</span>
+                    <input
+                      value={measurements[key] || ""}
+                      onChange={(e) => handleMeasurementChange(key, e.target.value)}
+                      placeholder="in inches"
+                      className="w-full mt-1 p-2 bg-transparent border text-sm"
+                      style={{ borderColor: "#2B2620" }}
+                    />
+                  </label>
+                ))}
+              </div>
+              <MeasurementGuide />
+            </>
           )}
         </div>
 
