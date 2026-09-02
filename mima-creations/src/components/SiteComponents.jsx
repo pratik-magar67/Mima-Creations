@@ -13,6 +13,7 @@ export const SAGE_LIGHT = "#E3EBDE";
 export const ROSE = "#AD6E5B";
 
 export const WHATSAPP_NUMBER = "9779824203807";
+export const TIKTOK_HANDLE = "mima_creation03";
 
 export const CATEGORIES = [
 {
@@ -61,6 +62,15 @@ return (
 <rect x="2" y="2" width="20" height="20" rx="5" />
 <circle cx="12" cy="12" r="4.2" />
 <circle cx="17.3" cy="6.7" r="1" fill={color} stroke="none" />
+</svg>
+);
+}
+
+export function TikTokIcon({ size = 16, color = "currentColor" }) {
+return (
+<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" aria-hidden="true">
+  <path d="M16 4v9.5a3.5 3.5 0 1 1-3.5-3.5" strokeLinecap="round" strokeLinejoin="round" />
+  <path d="M16 4c0 2.5 2 4.5 4.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
 </svg>
 );
 }

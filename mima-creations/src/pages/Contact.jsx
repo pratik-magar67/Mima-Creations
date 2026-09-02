@@ -12,6 +12,8 @@ import {
   WHATSAPP_NUMBER,
   Logo,
   InstagramIcon,
+  TikTokIcon,
+  TIKTOK_HANDLE,
   Reveal,
 } from "../components/SiteComponents";
 
@@ -45,11 +47,21 @@ export default function Contact() {
             <a
               href="https://instagram.com/mimaa_creations2"
               target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:underline"
             >
               <InstagramIcon size={16} />
               @mimaa_creations2
+            </a>
+
+            <a
+              href={`https://www.tiktok.com/@${TIKTOK_HANDLE}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:underline"
+            >
+              <TikTokIcon size={16} />
+              @{TIKTOK_HANDLE}
             </a>
 
             <a

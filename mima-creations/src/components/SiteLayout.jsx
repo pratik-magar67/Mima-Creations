@@ -19,6 +19,8 @@ SAGE_DARK,
 ROSE,
 Logo,
 InstagramIcon,
+TikTokIcon,
+TIKTOK_HANDLE,
 StitchDivider,
 ScrollToTopButton,
 } from "./SiteComponents";
@@ -404,10 +406,20 @@ fontFamily: "'Jost', sans-serif",
           href="https://instagram.com/mimaa_creations2"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 hover:underline"
         >
           <InstagramIcon size={14} />
           @mimaa_creations2
+        </a>
+
+        <a
+          href={`https://www.tiktok.com/@${TIKTOK_HANDLE}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 hover:underline"
+        >
+          <TikTokIcon size={14} />
+          @{TIKTOK_HANDLE}
         </a>
 
         <a
