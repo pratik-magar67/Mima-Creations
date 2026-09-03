@@ -350,5 +350,3 @@ color: SAGE_DARK,
 
 );
 }
-
-//no change for today
