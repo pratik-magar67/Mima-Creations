@@ -431,6 +431,16 @@ fontFamily: "'Jost', sans-serif",
         </a>
       </div>
     </div>
+
+    <div
+      className="text-center text-xs mt-6 pt-4"
+      style={{
+        color: INK_SOFT,
+        borderTop: `1px solid ${CREAM_DARK}`,
+      }}
+    >
+      © 2026 Mima Creations. All rights reserved.
+    </div>
   </footer>
 
   {location.pathname !==
