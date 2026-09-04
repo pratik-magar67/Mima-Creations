@@ -32,7 +32,6 @@ const MEASUREMENT_FIELDS = [
 ];
 
 export default function Enquiry() {
-  const [searchParams] = useSearchParams();
 
   const categoryFromUrl = searchParams.get("category");
   const pieceFromUrl = searchParams.get("piece");
@@ -62,6 +61,7 @@ export default function Enquiry() {
   const [uploadError, setUploadError] = useState("");
   const [formLoadTime] = useState(() => Date.now());
   const [cooldownActive, setCooldownActive] = useState(false);
+  const [dbSaveFailed, setDbSaveFailed] = useState(false);
 
   useEffect(() => {
     try {
@@ -179,7 +179,11 @@ export default function Enquiry() {
       ]);
 
       if (error) {
+        // WhatsApp remains the primary channel, but tell the customer the backup was not saved.
         console.error("Could not save enquiry:", error.message);
+        setDbSaveFailed(true);
+      } else {
+        setDbSaveFailed(false);
       }
 
       const measurementLines = hasMeasurements
@@ -231,6 +235,16 @@ export default function Enquiry() {
           Your enquiry has been formatted and opened in WhatsApp. We'll reach out to discuss
           further details and pricing.
         </p>
+        {dbSaveFailed && (
+          <p
+            className="text-xs mb-8 px-4 py-3 text-left"
+            style={{ background: "#F3E4DD", color: "#8A4A3A", border: "1px solid #E3C9BE" }}
+          >
+            One thing to note: we couldn't save a backup copy of your enquiry on our end, so
+            please make sure to send the WhatsApp message that just opened — that's what we'll
+            use to follow up with you.
+          </p>
+        )}
         <Link
           to="/home"
           className="btn inline-block text-sm px-6 py-3"

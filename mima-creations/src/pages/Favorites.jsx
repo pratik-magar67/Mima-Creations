@@ -49,8 +49,8 @@ export default function Favorites() {
     setLoading(false);
   }
 
-  function removeFavorite(name) {
-    const updated = favorites.filter((n) => n !== name);
+  function removeFavorite(id) {
+    const updated = favorites.filter((favId) => favId !== id);
     setFavorites(updated);
     try {
       localStorage.setItem("mima_favorites", JSON.stringify(updated));
@@ -59,7 +59,7 @@ export default function Favorites() {
     }
   }
 
-  const savedProducts = products.filter((p) => favorites.includes(p.name));
+  const savedProducts = products.filter((p) => favorites.includes(p.id));
 
   return (
     <section className="px-6 md:px-12 py-14 max-w-6xl mx-auto">
@@ -107,7 +107,7 @@ export default function Favorites() {
                     )}
                   </Link>
                   <button
-                    onClick={() => removeFavorite(piece.name)}
+                    onClick={() => removeFavorite(piece.id)}
                     aria-label={`Remove ${piece.name} from favorites`}
                     className="absolute top-3 right-3 p-2"
                     style={{ background: CREAM }}

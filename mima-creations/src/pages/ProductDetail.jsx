@@ -86,11 +86,11 @@ export default function ProductDetail() {
     fetchRelated();
   }, [product]);
 
-  function toggleFavorite(pieceName) {
+  function toggleFavorite(pieceId) {
     setFavorites((current) =>
-      current.includes(pieceName)
-        ? current.filter((name) => name !== pieceName)
-        : [...current, pieceName]
+      current.includes(pieceId)
+        ? current.filter((id) => id !== pieceId)
+        : [...current, pieceId]
     );
   }
 
@@ -134,7 +134,7 @@ export default function ProductDetail() {
   }
 
   const categoryInfo = CATEGORIES.find((c) => c.id === product.category);
-  const isFavorite = favorites.includes(product.name);
+  const isFavorite = favorites.includes(product.id);
 
   return (
     <section className="px-6 md:px-12 py-12 max-w-6xl mx-auto">
@@ -164,7 +164,7 @@ export default function ProductDetail() {
             )}
           </div>
           <button
-            onClick={() => toggleFavorite(product.name)}
+            onClick={() => toggleFavorite(product.id)}
             aria-label={`${isFavorite ? "Remove" : "Save"} ${product.name}`}
             className="absolute top-3 right-3 p-2"
             style={{ background: CREAM }}

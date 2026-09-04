@@ -96,13 +96,13 @@ export default function Shop() {
     filterCategory,
   ]);
 
-  function toggleFavorite(pieceName) {
+  function toggleFavorite(pieceId) {
     setFavorites((current) =>
-      current.includes(pieceName)
+      current.includes(pieceId)
         ? current.filter(
-            (name) => name !== pieceName
+            (id) => id !== pieceId
           )
-        : [...current, pieceName]
+        : [...current, pieceId]
     );
   }
 
@@ -243,10 +243,10 @@ export default function Shop() {
 
                   <button
                     onClick={() =>
-                      toggleFavorite(piece.name)
+                      toggleFavorite(piece.id)
                     }
                     aria-label={`${
-                      favorites.includes(piece.name)
+                      favorites.includes(piece.id)
                         ? "Remove"
                         : "Save"
                     } ${piece.name}`}
@@ -259,7 +259,7 @@ export default function Shop() {
                       size={17}
                       fill={
                         favorites.includes(
-                          piece.name
+                          piece.id
                         )
                           ? ROSE
                           : "none"
@@ -270,7 +270,7 @@ export default function Shop() {
                           "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
                         transform:
                           favorites.includes(
-                            piece.name
+                            piece.id
                           )
                             ? "scale(1.15)"
                             : "scale(1)",
