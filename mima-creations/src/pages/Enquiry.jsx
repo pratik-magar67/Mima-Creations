@@ -32,6 +32,7 @@ const MEASUREMENT_FIELDS = [
 ];
 
 export default function Enquiry() {
+  const [searchParams] = useSearchParams();
 
   const categoryFromUrl = searchParams.get("category");
   const pieceFromUrl = searchParams.get("piece");
