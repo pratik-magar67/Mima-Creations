@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { CREAM_DARK, INK, INK_SOFT, SAGE_DARK, SAGE_LIGHT, ROSE } from "./adminTheme";
 import { AdminLoadingState, AdminErrorState } from "./AdminStateViews";
+import { normalizeStatus } from "./statusUtils";
 
 function StatCard({ label, value, accent }) {
   return (
@@ -49,11 +50,7 @@ export default function DashboardTab({ onNavigate }) {
       return;
     }
 
-    // Treat any legacy "done" values from before this update as "completed"
-    const normalized = (enquiries || []).map((e) => {
-      const s = e.status || "new";
-      return s === "done" ? "completed" : s;
-    });
+    const normalized = (enquiries || []).map((e) => normalizeStatus(e.status));
 
     const newCount = normalized.filter((s) => s === "new").length;
     const contactedCount = normalized.filter((s) => s === "contacted").length;

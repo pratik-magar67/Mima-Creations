@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { CREAM_DARK, INK, INK_SOFT, SAGE_DARK, ROSE } from "./adminTheme";
 import { AdminLoadingState, AdminErrorState } from "./AdminStateViews";
+import { normalizeStatus } from "./statusUtils";
 
 const STATUS_OPTIONS = ["new", "contacted", "in_progress", "completed"];
 
@@ -28,11 +29,6 @@ const MEASUREMENT_LABELS = {
   length: "Length",
   height: "Height",
 };
-
-function normalizeStatus(status) {
-  const s = status || "new";
-  return s === "done" ? "completed" : s; // legacy value from before this update
-}
 
 export default function EnquiriesTab() {
   const [enquiries, setEnquiries] = useState([]);
