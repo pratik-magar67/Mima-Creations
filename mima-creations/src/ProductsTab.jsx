@@ -5,6 +5,7 @@ import Toast from "./Toast";
 import ConfirmDialog from "./ConfirmDialog";
 import CropModal from "./CropModal";
 import { AdminLoadingState, AdminErrorState } from "./AdminStateViews";
+import { validateImageFile } from "./imageValidation";
 
 const CATEGORY_OPTIONS = ["sarees", "dresses", "kurtis", "crochet"];
 
@@ -61,11 +62,17 @@ export default function ProductsTab() {
 
   function handleFileChange(e) {
     const file = e.target.files[0] || null;
+    e.target.value = "";
     if (!file) return;
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     const objectUrl = URL.createObjectURL(file);
     setCropSource({ src: objectUrl, fileName: file.name });
-    e.target.value = "";
   }
 
   function handleCropConfirm(croppedFile) {

@@ -4,6 +4,7 @@ import { Upload, X } from "lucide-react";
 
 import { supabase } from "../supabaseClient";
 import MeasurementGuide from "../components/MeasurementGuide";
+import { validateImageFile, resizeImageFile } from "../imageValidation";
 
 import {
   CREAM,
@@ -92,18 +93,28 @@ export default function Enquiry() {
     setMeasurements((current) => ({ ...current, [key]: value }));
   }
 
-  function handlePhotoChange(e) {
+  async function handlePhotoChange(e) {
     const file = e.target.files[0] || null;
-    if (photoPreview) URL.revokeObjectURL(photoPreview);
-
-    if (file) {
-      setPhotoFile(file);
-      setPhotoPreview(URL.createObjectURL(file));
-    } else {
-      setPhotoFile(null);
-      setPhotoPreview(null);
-    }
     e.target.value = "";
+    if (!file) return;
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setUploadError(validationError);
+      return;
+    }
+
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setUploadError("");
+
+    try {
+      const resized = await resizeImageFile(file);
+      setPhotoFile(resized);
+      setPhotoPreview(URL.createObjectURL(resized));
+    } catch (err) {
+      console.error("Could not process photo:", err.message);
+      setUploadError("Could not process that photo — please try a different image.");
+    }
   }
 
   function removePhoto() {
