@@ -1,8 +1,4 @@
-export const CREAM = "#F6F0E3";
-export const CREAM_DARK = "#ECE2CC";
-export const INK = "#2B2620";
-export const INK_SOFT = "#6B6357";
-export const SAGE = "#7C9478";
-export const SAGE_DARK = "#5F7A5C";
-export const SAGE_LIGHT = "#E3EBDE";
-export const ROSE = "#AD6E5B";
+// Re-exported from the shared theme so the admin dashboard and public site
+// palettes can't drift apart. Import from here, from "./theme" directly,
+// or from SiteComponents.jsx — they all point at the same values.
+export { CREAM, CREAM_DARK, INK, INK_SOFT, SAGE, SAGE_DARK, SAGE_LIGHT, ROSE } from "./theme";

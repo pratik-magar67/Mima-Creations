@@ -1,11 +1,6 @@
 import React from "react";
 import { Heart } from "lucide-react";
-
-const CREAM = "#F6F0E3";
-const INK = "#2B2620";
-const INK_SOFT = "#6B6357";
-const SAGE_DARK = "#5F7A5C";
-const ROSE = "#AD6E5B";
+import { CREAM, INK, INK_SOFT, SAGE_DARK, ROSE } from "./theme";
 
 export default function NotFound() {
   return (
