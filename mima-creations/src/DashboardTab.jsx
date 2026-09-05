@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { CREAM_DARK, INK, INK_SOFT, SAGE_DARK, SAGE_LIGHT, ROSE } from "./adminTheme";
 import { AdminLoadingState, AdminErrorState } from "./AdminStateViews";
-import { normalizeStatus } from "./statusUtils";
 
 function StatCard({ label, value, accent }) {
   return (
@@ -41,21 +40,25 @@ export default function DashboardTab({ onNavigate }) {
       .from("products")
       .select("*", { count: "exact", head: true });
 
-    const { data: enquiries, error: enquiriesError } = await supabase.from("enquiries").select("status");
+    const [
+      { count: newCount, error: newError },
+      { count: contactedCount, error: contactedError },
+      { count: inProgressCount, error: inProgressError },
+      { count: completedOrders, error: completedError },
+    ] = await Promise.all([
+      supabase.from("enquiries").select("*", { count: "exact", head: true }).or("status.eq.new,status.is.null"),
+      supabase.from("enquiries").select("*", { count: "exact", head: true }).eq("status", "contacted"),
+      supabase.from("enquiries").select("*", { count: "exact", head: true }).eq("status", "in_progress"),
+      supabase.from("enquiries").select("*", { count: "exact", head: true }).or("status.eq.completed,status.eq.done"),
+    ]);
 
-    if (productsError || enquiriesError) {
-      console.error("Could not load dashboard stats:", (productsError || enquiriesError).message);
+    const firstError = productsError || newError || contactedError || inProgressError || completedError;
+    if (firstError) {
+      console.error("Could not load dashboard stats:", firstError.message);
       setError(true);
       setLoading(false);
       return;
     }
-
-    const normalized = (enquiries || []).map((e) => normalizeStatus(e.status));
-
-    const newCount = normalized.filter((s) => s === "new").length;
-    const contactedCount = normalized.filter((s) => s === "contacted").length;
-    const inProgressCount = normalized.filter((s) => s === "in_progress").length;
-    const completedOrders = normalized.filter((s) => s === "completed").length;
 
     setStats({
       totalProducts: totalProducts || 0,

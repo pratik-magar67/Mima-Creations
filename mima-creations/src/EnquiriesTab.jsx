@@ -3,8 +3,11 @@ import { supabase } from "./supabaseClient";
 import { CREAM_DARK, INK, INK_SOFT, SAGE_DARK, ROSE } from "./adminTheme";
 import { AdminLoadingState, AdminErrorState } from "./AdminStateViews";
 import { normalizeStatus } from "./statusUtils";
+import Toast from "./Toast";
+import ConfirmDialog from "./ConfirmDialog";
 
 const STATUS_OPTIONS = ["new", "contacted", "in_progress", "completed"];
+const PAGE_SIZE = 20;
 
 const STATUS_LABELS = {
   new: "New",
@@ -30,26 +33,68 @@ const MEASUREMENT_LABELS = {
   height: "Height",
 };
 
+function getEnquiryPhotoPath(url) {
+  if (!url) return null;
+  const marker = "/enquiry-photos/";
+  const idx = url.indexOf(marker);
+  if (idx === -1) return null;
+  return url.slice(idx + marker.length);
+}
+
 export default function EnquiriesTab() {
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [hasMore, setHasMore] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: "" });
+  const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null, imageUrl: null });
 
   useEffect(() => {
     fetchEnquiries();
   }, []);
 
+  function showToast(message) {
+    setToast({ visible: true, message });
+    setTimeout(() => setToast({ visible: false, message: "" }), 2500);
+  }
+
   async function fetchEnquiries() {
     setLoading(true);
+    setError("");
     const { data, error } = await supabase
       .from("enquiries")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(0, PAGE_SIZE - 1);
 
     if (error) setError(error.message);
-    else setEnquiries(data);
+    else {
+      setEnquiries(data);
+      setHasMore(data.length === PAGE_SIZE);
+    }
     setLoading(false);
+  }
+
+  async function loadMore() {
+    setLoadingMore(true);
+    const from = enquiries.length;
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from("enquiries")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      console.error("Could not load more enquiries:", error.message);
+      showToast("Couldn't load more enquiries");
+    } else {
+      setEnquiries((current) => [...current, ...data]);
+      setHasMore(data.length === PAGE_SIZE);
+    }
+    setLoadingMore(false);
   }
 
   async function updateStatus(id, newStatus) {
@@ -58,6 +103,32 @@ export default function EnquiriesTab() {
     if (error) {
       console.error("Could not update status:", error.message);
       fetchEnquiries();
+    }
+  }
+
+  function handleDelete(id, imageUrl) {
+    setConfirmDelete({ open: true, id, imageUrl });
+  }
+
+  async function confirmDeleteEnquiry() {
+    const { id, imageUrl } = confirmDelete;
+    setConfirmDelete({ open: false, id: null, imageUrl: null });
+
+    const path = getEnquiryPhotoPath(imageUrl);
+    if (path) {
+      const { error: storageError } = await supabase.storage.from("enquiry-photos").remove([path]);
+      if (storageError) {
+        console.error("Could not delete reference photo from storage:", storageError.message);
+      }
+    }
+
+    const { error } = await supabase.from("enquiries").delete().eq("id", id);
+    if (error) {
+      console.error("Could not delete enquiry:", error.message);
+      showToast("Couldn't delete enquiry");
+    } else {
+      setEnquiries((current) => current.filter((e) => e.id !== id));
+      showToast("Enquiry deleted");
     }
   }
 
@@ -88,6 +159,12 @@ export default function EnquiriesTab() {
         ))}
       </div>
 
+      {statusFilter !== "all" && hasMore && (
+        <p className="text-xs mb-3" style={{ color: INK_SOFT }}>
+          Filtering only what's loaded so far — load more below to see older matches too.
+        </p>
+      )}
+
       {filteredEnquiries.length === 0 ? (
         <p className="text-sm" style={{ color: INK_SOFT }}>No enquiries in this stage.</p>
       ) : (
@@ -116,6 +193,13 @@ export default function EnquiriesTab() {
                         <option key={s} value={s}>{STATUS_LABELS[s]}</option>
                       ))}
                     </select>
+                    <button
+                      onClick={() => handleDelete(e.id, e.image_url)}
+                      className="text-xs px-3 py-1.5"
+                      style={{ background: "#fff", color: "#B3261E", border: "1px solid #B3261E" }}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
                 <p className="text-sm" style={{ color: INK_SOFT }}>
@@ -135,12 +219,7 @@ export default function EnquiriesTab() {
                 )}
 
                 {e.image_url && (
-                  <a
-                    href={e.image_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-3 inline-block"
-                  >
+                  <a href={e.image_url} target="_blank" rel="noreferrer" className="mt-3 inline-block">
                     <img
                       src={e.image_url}
                       alt="Reference photo"
@@ -158,6 +237,28 @@ export default function EnquiriesTab() {
           })}
         </div>
       )}
+
+      {hasMore && (
+        <div className="flex justify-center mt-5">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="text-sm px-5 py-2"
+            style={{ background: CREAM_DARK, color: INK }}
+          >
+            {loadingMore ? "Loading..." : "Load more"}
+          </button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={confirmDelete.open}
+        title="Delete this enquiry?"
+        message="This can't be undone. The reference photo, if any, will also be removed."
+        onConfirm={confirmDeleteEnquiry}
+        onCancel={() => setConfirmDelete({ open: false, id: null, imageUrl: null })}
+      />
+      <Toast message={toast.message} visible={toast.visible} />
     </div>
   );
 }
