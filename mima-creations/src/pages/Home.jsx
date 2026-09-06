@@ -10,6 +10,7 @@ import categorySarees from "../assets/category-sarees.png";
 import categoryDresses from "../assets/category-dresses.png";
 import categoryKurtis from "../assets/category-kurtis.png";
 import categoryCrochet from "../assets/category-crochet.png";
+import { supabase } from "../supabaseClient";
 
 const CATEGORY_IMAGES = {
   sarees: categorySarees,
@@ -18,7 +19,7 @@ const CATEGORY_IMAGES = {
   crochet: categoryCrochet,
 };
 
-const HERO_IMAGES = [
+const FALLBACK_HERO_IMAGES = [
   { src: heroGown, alt: "Custom royal blue gown by Mima Creations" },
   { src: categorySarees, alt: "Sarees & Blouses by Mima Creations" },
   { src: categoryDresses, alt: "Dresses & Gowns by Mima Creations" },
@@ -109,6 +110,43 @@ import {
 } from "../components/SiteComponents";
 
 export default function Home() {
+  const [heroImages, setHeroImages] = useState(FALLBACK_HERO_IMAGES);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchHeroImages() {
+      const results = await Promise.all(
+        CATEGORIES.map((category) =>
+          supabase
+            .from("products")
+            .select("id, name, image_url")
+            .eq("category", category.id)
+            .or("available.is.null,available.eq.true")
+            .not("image_url", "is", null)
+            .order("id", { ascending: false })
+            .limit(1)
+        )
+      );
+
+      if (cancelled) return;
+
+      const images = results
+        .flatMap((r) => r.data || [])
+        .map((p) => ({ src: p.image_url, alt: p.name }));
+
+      if (images.length > 0) {
+        setHeroImages(images);
+      }
+      // If every category came back empty (or errored), heroImages stays as FALLBACK_HERO_IMAGES
+    }
+
+    fetchHeroImages();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <>
       {/* HERO */}
@@ -173,7 +211,7 @@ export default function Home() {
           </div>
 
           <div className="order-1 md:order-2 h-56 sm:h-64 md:h-auto">
-            <HeroCarousel images={HERO_IMAGES} />
+            <HeroCarousel images={heroImages} />
           </div>
         </FadeInOnMount>
       </section>
