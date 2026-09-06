@@ -135,7 +135,7 @@ export default function Home() {
 
             <Link
               to="/enquiry"
-              className="btn inline-flex items-center gap-2 text-sm px-6 py-3 w-fit"
+              className="btn hidden md:inline-flex items-center gap-2 text-sm px-6 py-3 w-fit"
               style={{
                 background: ROSE,
                 color: CREAM,
@@ -146,8 +146,8 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="order-1 md:order-2 h-56 sm:h-64 md:h-[600px] lg:h-[680px]">
-            <ImageCarousel images={heroImages} />
+          <div className="order-1 md:order-2 h-80 sm:h-96 md:h-[600px] lg:h-[680px]">
+            <ImageCarousel images={heroImages} objectPosition="50% 15%" />
           </div>
         </FadeInOnMount>
       </section>

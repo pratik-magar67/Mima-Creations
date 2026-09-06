@@ -48,7 +48,7 @@ name: "Customer name",
 },
 ];
 
-export function ImageCarousel({ images, intervalMs = 4500, className = "" }) {
+export function ImageCarousel({ images, intervalMs = 4500, className = "", objectPosition = "center" }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -73,6 +73,7 @@ export function ImageCarousel({ images, intervalMs = 4500, className = "" }) {
           style={{
             position: "absolute", inset: 0, width: "100%", height: "100%",
             objectFit: "cover",
+            objectPosition,
             opacity: i === index ? 1 : 0,
             transition: "opacity 0.8s ease",
           }}
