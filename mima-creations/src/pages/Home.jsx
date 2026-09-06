@@ -4,6 +4,19 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+import heroGown from "../assets/hero-gown.png";
+import categorySarees from "../assets/category-sarees.png";
+import categoryDresses from "../assets/category-dresses.png";
+import categoryKurtis from "../assets/category-kurtis.png";
+import categoryCrochet from "../assets/category-crochet.png";
+
+const CATEGORY_IMAGES = {
+  sarees: categorySarees,
+  dresses: categoryDresses,
+  kurtis: categoryKurtis,
+  crochet: categoryCrochet,
+};
+
 import {
   CREAM,
   INK,
@@ -15,6 +28,7 @@ import {
   CATEGORIES,
   TESTIMONIALS,
   PlaceholderImage,
+  FadeImage,
   Reveal,
   FadeInOnMount,
   StitchDivider,
@@ -85,9 +99,11 @@ export default function Home() {
           </div>
 
           <div className="order-1 md:order-2 h-56 sm:h-64 md:h-auto">
-            <PlaceholderImage
-              label="Replace with a hero photo — an embroidered blouse or saree works best"
-              fill
+            <FadeImage
+              src={heroGown}
+              alt="Custom royal blue gown by Mima Creations"
+              className="h-full"
+              priority
             />
           </div>
         </FadeInOnMount>
@@ -128,7 +144,11 @@ export default function Home() {
                   }}
                 >
                   <div className="img-zoom-wrap">
-                    <PlaceholderImage label={category.name} tall />
+                    {CATEGORY_IMAGES[category.id] ? (
+                      <FadeImage src={CATEGORY_IMAGES[category.id]} alt={category.name} className="aspect-[4/5] h-auto" />
+                    ) : (
+                      <PlaceholderImage label={category.name} tall />
+                    )}
                   </div>
 
                   <div className="p-5">
