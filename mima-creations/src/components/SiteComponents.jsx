@@ -48,6 +48,61 @@ name: "Customer name",
 },
 ];
 
+export function ImageCarousel({ images, intervalMs = 4500, className = "" }) {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced || paused || images.length <= 1) return;
+    const timer = setInterval(() => setIndex((i) => (i + 1) % images.length), intervalMs);
+    return () => clearInterval(timer);
+  }, [images.length, intervalMs, paused]);
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className={`relative h-full ${className}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      {images.map((img, i) => (
+        <img
+          key={img.src}
+          src={img.src}
+          alt={img.alt}
+          loading={i === 0 ? "eager" : "lazy"}
+          decoding="async"
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover",
+            opacity: i === index ? 1 : 0,
+            transition: "opacity 0.8s ease",
+          }}
+        />
+      ))}
+      {images.length > 1 && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5" style={{ zIndex: 2 }}>
+          {images.map((_, i) => (
+            <button
+              key={i}
+              aria-label={`Show photo ${i + 1} of ${images.length}`}
+              onClick={() => setIndex(i)}
+              style={{
+                width: i === index ? "16px" : "6px",
+                height: "6px",
+                borderRadius: "999px",
+                background: i === index ? "#fff" : "rgba(255,255,255,0.55)",
+                border: "none",
+                padding: 0,
+                transition: "width 0.3s ease, background 0.3s ease",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function InstagramIcon({
 size = 16,
 color = "currentColor",

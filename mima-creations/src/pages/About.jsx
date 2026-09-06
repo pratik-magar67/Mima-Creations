@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import React from "react";
 import { Link } from "react-router-dom";
 import {
@@ -17,11 +18,33 @@ SAGE_DARK,
 SAGE_LIGHT,
 ROSE,
 Logo,
+  ImageCarousel,
 Reveal,
 StitchDivider,
 } from "../components/SiteComponents";
+import { supabase } from "../supabaseClient";
 
 export default function About() {
+const [galleryImages, setGalleryImages] = useState([]);
+
+useEffect(() => {
+  let cancelled = false;
+  async function fetchGallery() {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, name, image_url")
+      .or("available.is.null,available.eq.true")
+      .not("image_url", "is", null)
+      .order("id", { ascending: false })
+      .limit(8);
+    if (!cancelled && !error && data) {
+      setGalleryImages(data.map((p) => ({ src: p.image_url, alt: p.name })));
+    }
+  }
+  fetchGallery();
+  return () => { cancelled = true; };
+}, []);
+
 return (
 <div
 style={{
@@ -81,34 +104,24 @@ Our story
     <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 md:gap-20 items-center">
       <Reveal>
         <div
-          className="aspect-[4/5] flex items-center justify-center"
+          className="aspect-[4/5]"
           style={{
             background: SAGE_LIGHT,
             border:
               "1px solid " + SAGE,
           }}
         >
-          <div className="text-center px-8">
-            <Logo size={150} />
-
-            <p
-              className="script text-3xl mt-4"
-              style={{
-                color: INK,
-              }}
-            >
-              Made for you
-            </p>
-
-            <p
-              className="text-sm mt-3"
-              style={{
-                color: INK_SOFT,
-              }}
-            >
-              Handmade with intention
-            </p>
-          </div>
+          {galleryImages.length > 0 ? (
+            <ImageCarousel images={galleryImages} className="h-full" />
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center px-8">
+                <Logo size={150} />
+                <p className="script text-3xl mt-4" style={{ color: INK }}>Made for you</p>
+                <p className="text-sm mt-3" style={{ color: INK_SOFT }}>Handmade with intention</p>
+              </div>
+            </div>
+          )}
         </div>
       </Reveal>
 
