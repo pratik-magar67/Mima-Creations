@@ -83,6 +83,7 @@ function HeroCarousel({ images, intervalMs = 4500 }) {
                 border: "none",
                 padding: 0,
                 transition: "width 0.3s ease, background 0.3s ease",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
               }}
             />
           ))}
@@ -210,7 +211,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="order-1 md:order-2 h-56 sm:h-64 md:h-auto">
+          <div className="order-1 md:order-2 h-56 sm:h-64 md:h-[600px] lg:h-[680px]">
             <HeroCarousel images={heroImages} />
           </div>
         </FadeInOnMount>
