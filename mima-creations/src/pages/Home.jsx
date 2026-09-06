@@ -71,21 +71,9 @@ export default function Home() {
         .flatMap((r) => r.data || [])
         .map((p) => ({ src: p.image_url, alt: p.name }));
 
-      if (fetched.length === 0) return;
-
-      await Promise.all(
-        fetched.map(
-          (img) =>
-            new Promise((resolve) => {
-              const preload = new Image();
-              preload.onload = resolve;
-              preload.onerror = resolve;
-              preload.src = img.src;
-            })
-        )
-      );
-
-      if (!cancelled) setHeroImages(fetched);
+      if (fetched.length > 0 && !cancelled) {
+        setHeroImages(fetched);
+      }
     }
 
     fetchHeroImages();
