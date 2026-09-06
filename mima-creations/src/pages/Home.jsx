@@ -47,6 +47,8 @@ import {
 
 export default function Home() {
   const [heroImages, setHeroImages] = useState(FALLBACK_HERO_IMAGES);
+  const [usingFallback, setUsingFallback] = useState(true);
+  const [heroVisible, setHeroVisible] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,9 +73,29 @@ export default function Home() {
         .flatMap((r) => r.data || [])
         .map((p) => ({ src: p.image_url, alt: p.name }));
 
-      if (fetched.length > 0 && !cancelled) {
+      if (fetched.length === 0) return;
+
+      await Promise.all(
+        fetched.map(
+          (img) =>
+            new Promise((resolve) => {
+              const preload = new Image();
+              preload.onload = resolve;
+              preload.onerror = resolve;
+              preload.src = img.src;
+            })
+        )
+      );
+
+      if (cancelled) return;
+
+      setHeroVisible(false);
+      setTimeout(() => {
+        if (cancelled) return;
         setHeroImages(fetched);
-      }
+        setUsingFallback(false);
+        setHeroVisible(true);
+      }, 350);
     }
 
     fetchHeroImages();
@@ -145,8 +167,15 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="order-1 md:order-2 h-80 sm:h-96 md:h-[600px] lg:h-[680px]">
-            <ImageCarousel images={heroImages} objectPosition="50% 15%" />
+          <div
+            className="order-1 md:order-2 h-80 sm:h-96 md:h-[600px] lg:h-[680px]"
+            style={{ opacity: heroVisible ? 1 : 0, transition: "opacity 0.35s ease" }}
+          >
+            <ImageCarousel
+              key={usingFallback ? "fallback" : "live"}
+              images={heroImages}
+              objectPosition="50% 15%"
+            />
           </div>
         </FadeInOnMount>
       </section>

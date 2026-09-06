@@ -48,36 +48,6 @@ name: "Customer name",
 },
 ];
 
-function CarouselSlide({ src, alt, active, eager, objectPosition }) {
-  const [displaySrc, setDisplaySrc] = useState(src);
-
-  useEffect(() => {
-    // Only update the image while this slide isn't visible.
-    // That way the swap always happens off-screen, and whenever
-    // this slide becomes active again, it fades in normally
-    // instead of popping to new content mid-view.
-    if (!active) {
-      setDisplaySrc(src);
-    }
-  }, [src, active]);
-
-  return (
-    <img
-      src={displaySrc}
-      alt={alt}
-      loading={eager ? "eager" : "lazy"}
-      decoding="async"
-      style={{
-        position: "absolute", inset: 0, width: "100%", height: "100%",
-        objectFit: "cover",
-        objectPosition,
-        opacity: active ? 1 : 0,
-        transition: "opacity 0.8s ease",
-      }}
-    />
-  );
-}
-
 export function ImageCarousel({ images, intervalMs = 4500, className = "", objectPosition = "center" }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -94,13 +64,19 @@ export function ImageCarousel({ images, intervalMs = 4500, className = "", objec
   return (
     <div className={`relative h-full ${className}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       {images.map((img, i) => (
-        <CarouselSlide
+        <img
           key={i}
           src={img.src}
           alt={img.alt}
-          active={i === index}
-          eager={i === 0}
-          objectPosition={objectPosition}
+          loading={i === 0 ? "eager" : "lazy"}
+          decoding="async"
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover",
+            objectPosition,
+            opacity: i === index ? 1 : 0,
+            transition: "opacity 0.8s ease",
+          }}
         />
       ))}
       {images.length > 1 && (
