@@ -67,14 +67,25 @@ export default function Home() {
 
       if (cancelled) return;
 
-      const images = results
+      const fetched = results
         .flatMap((r) => r.data || [])
         .map((p) => ({ src: p.image_url, alt: p.name }));
 
-      if (images.length > 0) {
-        setHeroImages(images);
-      }
-      // If every category came back empty (or errored), heroImages stays as FALLBACK_HERO_IMAGES
+      if (fetched.length === 0) return;
+
+      await Promise.all(
+        fetched.map(
+          (img) =>
+            new Promise((resolve) => {
+              const preload = new Image();
+              preload.onload = resolve;
+              preload.onerror = resolve;
+              preload.src = img.src;
+            })
+        )
+      );
+
+      if (!cancelled) setHeroImages(fetched);
     }
 
     fetchHeroImages();

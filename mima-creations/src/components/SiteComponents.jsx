@@ -48,6 +48,31 @@ name: "Customer name",
 },
 ];
 
+function CarouselSlide({ src, alt, active, eager, objectPosition }) {
+  const [entered, setEntered] = useState(false);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setEntered(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      style={{
+        position: "absolute", inset: 0, width: "100%", height: "100%",
+        objectFit: "cover",
+        objectPosition,
+        opacity: entered && active ? 1 : 0,
+        transition: "opacity 0.8s ease",
+      }}
+    />
+  );
+}
+
 export function ImageCarousel({ images, intervalMs = 4500, className = "", objectPosition = "center" }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -64,19 +89,13 @@ export function ImageCarousel({ images, intervalMs = 4500, className = "", objec
   return (
     <div className={`relative h-full ${className}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       {images.map((img, i) => (
-        <img
+        <CarouselSlide
           key={img.src}
           src={img.src}
           alt={img.alt}
-          loading={i === 0 ? "eager" : "lazy"}
-          decoding="async"
-          style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            objectFit: "cover",
-            objectPosition,
-            opacity: i === index ? 1 : 0,
-            transition: "opacity 0.8s ease",
-          }}
+          active={i === index}
+          eager={i === 0}
+          objectPosition={objectPosition}
         />
       ))}
       {images.length > 1 && (
