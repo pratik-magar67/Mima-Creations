@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -16,6 +17,79 @@ const CATEGORY_IMAGES = {
   kurtis: categoryKurtis,
   crochet: categoryCrochet,
 };
+
+const HERO_IMAGES = [
+  { src: heroGown, alt: "Custom royal blue gown by Mima Creations" },
+  { src: categorySarees, alt: "Sarees & Blouses by Mima Creations" },
+  { src: categoryDresses, alt: "Dresses & Gowns by Mima Creations" },
+  { src: categoryKurtis, alt: "Kurtis by Mima Creations" },
+  { src: categoryCrochet, alt: "Crochet pieces by Mima Creations" },
+];
+
+function HeroCarousel({ images, intervalMs = 4500 }) {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced || paused || images.length <= 1) return;
+    const timer = setInterval(() => {
+      setIndex((i) => (i + 1) % images.length);
+    }, intervalMs);
+    return () => clearInterval(timer);
+  }, [images.length, intervalMs, paused]);
+
+  return (
+    <div
+      className="relative h-full"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {images.map((img, i) => (
+        <img
+          key={img.src}
+          src={img.src}
+          alt={img.alt}
+          loading={i === 0 ? "eager" : "lazy"}
+          decoding="async"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: i === index ? 1 : 0,
+            transition: "opacity 0.8s ease",
+          }}
+        />
+      ))}
+
+      {images.length > 1 && (
+        <div
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5"
+          style={{ zIndex: 2 }}
+        >
+          {images.map((_, i) => (
+            <button
+              key={i}
+              aria-label={`Show photo ${i + 1} of ${images.length}`}
+              onClick={() => setIndex(i)}
+              style={{
+                width: i === index ? "16px" : "6px",
+                height: "6px",
+                borderRadius: "999px",
+                background: i === index ? "#fff" : "rgba(255,255,255,0.55)",
+                border: "none",
+                padding: 0,
+                transition: "width 0.3s ease, background 0.3s ease",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 import {
   CREAM,
@@ -99,12 +173,7 @@ export default function Home() {
           </div>
 
           <div className="order-1 md:order-2 h-56 sm:h-64 md:h-auto">
-            <FadeImage
-              src={heroGown}
-              alt="Custom royal blue gown by Mima Creations"
-              className="h-full"
-              priority
-            />
+            <HeroCarousel images={HERO_IMAGES} />
           </div>
         </FadeInOnMount>
       </section>
