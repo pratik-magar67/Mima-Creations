@@ -423,11 +423,11 @@ fontFamily: "'Jost', sans-serif",
         </a>
 
         <a
-          href="mailto:hello@mimacreations.com"
+          href="mailto:mimaacreation@gmail.com"
           className="flex items-center gap-1"
         >
           <Mail size={14} />
-          hello@mimacreations.com
+          mimaacreation@gmail.com
         </a>
       </div>
     </div>

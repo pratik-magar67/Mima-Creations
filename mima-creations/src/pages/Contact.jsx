@@ -65,11 +65,11 @@ export default function Contact() {
             </a>
 
             <a
-              href="mailto:hello@mimacreations.com"
+              href="mailto:mimaacreation@gmail.com"
               className="flex items-center gap-2"
             >
               <Mail size={16} />
-              hello@mimacreations.com
+              mimaacreation@gmail.com
             </a>
 
             <a
