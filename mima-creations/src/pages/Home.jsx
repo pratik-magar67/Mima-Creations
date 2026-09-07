@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -50,6 +50,9 @@ export default function Home() {
   const [usingFallback, setUsingFallback] = useState(true);
   const [heroVisible, setHeroVisible] = useState(true);
 
+  const fetchedImagesRef = useRef(null);
+  const swappedRef = useRef(false);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -89,19 +92,24 @@ export default function Home() {
 
       if (cancelled) return;
 
-      setHeroVisible(false);
-      setTimeout(() => {
-        if (cancelled) return;
-        setHeroImages(fetched);
-        setUsingFallback(false);
-        setHeroVisible(true);
-      }, 350);
+      fetchedImagesRef.current = fetched;
     }
 
     fetchHeroImages();
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  const swapToLiveImages = useCallback(() => {
+    if (swappedRef.current || !fetchedImagesRef.current) return;
+    swappedRef.current = true;
+    setHeroVisible(false);
+    setTimeout(() => {
+      setHeroImages(fetchedImagesRef.current);
+      setUsingFallback(false);
+      setHeroVisible(true);
+    }, 350);
   }, []);
 
   return (
@@ -175,6 +183,7 @@ export default function Home() {
               key={usingFallback ? "fallback" : "live"}
               images={heroImages}
               objectPosition="50% 15%"
+              onCycleComplete={usingFallback ? swapToLiveImages : undefined}
             />
           </div>
         </FadeInOnMount>

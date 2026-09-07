@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ArrowUp, Heart } from "lucide-react";
 
 import logoImg from "../assets/logo.png";
@@ -48,14 +48,25 @@ name: "Customer name",
 },
 ];
 
-export function ImageCarousel({ images, intervalMs = 4500, className = "", objectPosition = "center" }) {
+export function ImageCarousel({ images, intervalMs = 4500, className = "", objectPosition = "center", onCycleComplete }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const onCycleCompleteRef = useRef(onCycleComplete);
+
+  useEffect(() => {
+    onCycleCompleteRef.current = onCycleComplete;
+  }, [onCycleComplete]);
 
   useEffect(() => {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced || paused || images.length <= 1) return;
-    const timer = setInterval(() => setIndex((i) => (i + 1) % images.length), intervalMs);
+    const timer = setInterval(() => {
+      setIndex((i) => {
+        const next = (i + 1) % images.length;
+        if (next === 0) onCycleCompleteRef.current?.();
+        return next;
+      });
+    }, intervalMs);
     return () => clearInterval(timer);
   }, [images.length, intervalMs, paused]);
 
