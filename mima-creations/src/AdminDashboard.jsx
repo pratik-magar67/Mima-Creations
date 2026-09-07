@@ -4,6 +4,7 @@ import AdminLogin from "./AdminLogin";
 import DashboardTab from "./DashboardTab";
 import EnquiriesTab from "./EnquiriesTab";
 import ProductsTab from "./ProductsTab";
+import FeedbackTab from "./FeedbackTab";
 import { CREAM, CREAM_DARK, INK, INK_SOFT, SAGE_DARK, ROSE } from "./adminTheme";
 
 export default function AdminDashboard() {
@@ -61,7 +62,7 @@ export default function AdminDashboard() {
 
       <div className="px-6 md:px-10 pt-6">
         <div className="flex gap-2 mb-6">
-          {[["dashboard", "Dashboard"], ["enquiries", "Enquiries"], ["products", "Products"]].map(([id, label]) => (
+          {[["dashboard", "Dashboard"], ["enquiries", "Enquiries"], ["products", "Products"], ["feedback", "Feedback"]].map(([id, label]) => (
             <button
               key={id}
               onClick={() => setTab(id)}
@@ -89,6 +90,7 @@ export default function AdminDashboard() {
           {tab === "dashboard" && <DashboardTab onNavigate={setTab} />}
           {tab === "enquiries" && <EnquiriesTab />}
           {tab === "products" && <ProductsTab />}
+                  {tab === "feedback" && <FeedbackTab />}
         </div>
       </div>
     </div>
