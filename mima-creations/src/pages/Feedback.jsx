@@ -60,7 +60,11 @@ export default function Feedback() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {feedback.map((item) => (
               <div key={item.id} style={{ border: `1px solid ${CREAM_DARK}`, background: "#F8F3E9" }}>
-                <PlaceholderImage label="Replace with customer photo" />
+                {item.image_url ? (
+                  <img src={item.image_url} alt={item.customer_name} className="w-full aspect-square object-cover" />
+                ) : (
+                  <PlaceholderImage label="Replace with customer photo" />
+                )}
                 <div className="p-4">
                   <p className="text-sm italic mb-3 leading-5" style={{ color: INK_SOFT }}>
                     "{item.quote}"

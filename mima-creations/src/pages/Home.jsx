@@ -311,7 +311,11 @@ export default function Home() {
                     background: "#F8F3E9",
                   }}
                 >
-                  <PlaceholderImage label="Replace with customer photo" />
+                  {item.image_url ? (
+                    <img src={item.image_url} alt={item.customer_name} className="w-full aspect-square object-cover" />
+                  ) : (
+                    <PlaceholderImage label="Replace with customer photo" />
+                  )}
 
                   <div className="p-5">
                     <p
