@@ -32,6 +32,17 @@ const MEASUREMENT_FIELDS = [
   ["height", "Height"],
 ];
 
+const CROCHET_FIELDS = [
+  ["flowerCount", "Number of flowers"],
+  ["flowerColors", "Flower color(s)"],
+  ["wrapping", "Wrapping material"],
+  ["size", "Size / Stem length"],
+];
+
+function fieldsForCategory(category) {
+  return category === "crochet" ? CROCHET_FIELDS : MEASUREMENT_FIELDS;
+}
+
 export default function Enquiry() {
   const [searchParams] = useSearchParams();
 
@@ -54,6 +65,9 @@ export default function Enquiry() {
 
   const [measurements, setMeasurements] = useState({});
   const [showMeasurements, setShowMeasurements] = useState(false);
+
+  const isCrochet = enquiry.category === "crochet";
+  const activeMeasurementFields = fieldsForCategory(enquiry.category);
 
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
@@ -86,7 +100,15 @@ export default function Enquiry() {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setEnquiry((current) => ({ ...current, [name]: value }));
+    setEnquiry((current) => {
+      const next = { ...current, [name]: value };
+      // Switching between crochet and clothing categories uses a different
+      // field set, so clear out whatever was entered for the previous set.
+      if (name === "category" && fieldsForCategory(value) !== fieldsForCategory(current.category)) {
+        setMeasurements({});
+      }
+      return next;
+    });
   }
 
   function handleMeasurementChange(key, value) {
@@ -198,10 +220,11 @@ export default function Enquiry() {
         setDbSaveFailed(false);
       }
 
+      const activeFields = fieldsForCategory(enquiry.category);
       const measurementLines = hasMeasurements
         ? Object.entries(cleanMeasurements)
             .map(([key, value]) => {
-              const label = MEASUREMENT_FIELDS.find(([k]) => k === key)?.[1] || key;
+              const label = activeFields.find(([k]) => k === key)?.[1] || key;
               return `${label}: ${value}`;
             })
             .join(", ")
@@ -213,7 +236,7 @@ export default function Enquiry() {
           `*Contact:* ${enquiry.contact}\n` +
           `*Category:* ${enquiry.category}\n` +
           `*Notes:* ${enquiry.notes || "None"}\n` +
-          `*Measurements:* ${measurementLines}\n` +
+          `*${enquiry.category === "crochet" ? "Crochet details" : "Measurements"}:* ${measurementLines}\n` +
           `*Reference photo:* ${imageUrl ? "Attached via form" : "None"}\n` +
           `*Budget:* ${enquiry.budget || "Not specified"}`
       );
@@ -352,26 +375,32 @@ export default function Enquiry() {
             className="text-sm underline"
             style={{ color: SAGE_DARK }}
           >
-            {showMeasurements ? "Hide measurements" : "Add measurements (optional)"}
+            {showMeasurements
+              ? isCrochet
+                ? "Hide crochet details"
+                : "Hide measurements"
+              : isCrochet
+              ? "Add crochet details (optional)"
+              : "Add measurements (optional)"}
           </button>
 
           {showMeasurements && (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-                {MEASUREMENT_FIELDS.map(([key, label]) => (
+                {activeMeasurementFields.map(([key, label]) => (
                   <label key={key} className="block">
                     <span className="text-xs" style={{ color: INK_SOFT }}>{label}</span>
                     <input
                       value={measurements[key] || ""}
                       onChange={(e) => handleMeasurementChange(key, e.target.value)}
-                      placeholder="in inches"
+                      placeholder={isCrochet ? "" : "in inches"}
                       className="w-full mt-1 p-2 bg-transparent border text-sm"
                       style={{ borderColor: "#2B2620" }}
                     />
                   </label>
                 ))}
               </div>
-              <MeasurementGuide />
+              {!isCrochet && <MeasurementGuide />}
             </>
           )}
         </div>
@@ -454,4 +483,3 @@ export default function Enquiry() {
     </section>
   );
 }
-

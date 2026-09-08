@@ -31,6 +31,11 @@ const MEASUREMENT_LABELS = {
   sleeve: "Sleeve",
   length: "Length",
   height: "Height",
+  // Crochet enquiries use a different field set than clothing measurements
+  flowerCount: "Number of flowers",
+  flowerColors: "Flower color(s)",
+  wrapping: "Wrapping material",
+  size: "Size / Stem length",
 };
 
 function getEnquiryPhotoPath(url) {
