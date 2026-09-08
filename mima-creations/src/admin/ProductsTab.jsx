@@ -1,11 +1,11 @@
 import { CREAM_DARK, INK, INK_SOFT, SAGE_DARK, SAGE_LIGHT } from "./adminTheme";
 import React, { useState, useEffect } from "react";
-import { supabase } from "./supabaseClient";
+import { supabase } from "../supabaseClient";
 import Toast from "./Toast";
 import ConfirmDialog from "./ConfirmDialog";
 import CropModal from "./CropModal";
 import { AdminLoadingState, AdminErrorState } from "./AdminStateViews";
-import { validateImageFile } from "./imageValidation";
+import { validateImageFile } from "../imageValidation";
 
 const CATEGORY_OPTIONS = ["sarees", "dresses", "kurtis", "crochet"];
 

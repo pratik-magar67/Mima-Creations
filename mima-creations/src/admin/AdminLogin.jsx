@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { supabase } from "./supabaseClient";
+import { supabase } from "../supabaseClient";
 import { CREAM, INK, INK_SOFT, SAGE_DARK, ROSE, CREAM_DARK } from "./adminTheme";
 
 export default function AdminLogin() {

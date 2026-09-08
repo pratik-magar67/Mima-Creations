@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
 
-const AdminDashboard = lazy(() => import("./AdminDashboard.jsx"));
+const AdminDashboard = lazy(() => import("./admin/AdminDashboard.jsx"));
 
 const isAdmin = window.location.pathname.startsWith("/admin");
 
