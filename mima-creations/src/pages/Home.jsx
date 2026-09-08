@@ -36,7 +36,6 @@ import {
   SAGE_LIGHT,
   ROSE,
   CATEGORIES,
-  TESTIMONIALS,
   PlaceholderImage,
   FadeImage,
   ImageCarousel,
@@ -49,6 +48,8 @@ export default function Home() {
   const [heroImages, setHeroImages] = useState(FALLBACK_HERO_IMAGES);
   const [usingFallback, setUsingFallback] = useState(true);
   const [heroVisible, setHeroVisible] = useState(true);
+  const [feedback, setFeedback] = useState([]);
+  const [feedbackLoaded, setFeedbackLoaded] = useState(false);
 
   const fetchedImagesRef = useRef(null);
   const swappedRef = useRef(false);
@@ -96,6 +97,32 @@ export default function Home() {
     }
 
     fetchHeroImages();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchFeedback() {
+      const { data, error } = await supabase
+        .from("feedback")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error("Could not load feedback:", error.message);
+      } else {
+        setFeedback(data || []);
+      }
+      setFeedbackLoaded(true);
+    }
+
+    fetchFeedback();
     return () => {
       cancelled = true;
     };
@@ -261,61 +288,63 @@ export default function Home() {
       <StitchDivider />
 
       {/* TESTIMONIAL PREVIEW */}
-      <section
-        className="py-24 md:py-28"
-        style={{ background: CREAM }}
-      >
-        <Reveal className="max-w-6xl mx-auto px-6">
-          <h2
-            className="display text-3xl md:text-4xl text-center mb-10"
-            style={{ color: INK }}
-          >
-            Happy customers
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {TESTIMONIALS.map((testimonial, index) => (
-              <div
-                key={index}
-                className="border"
-                style={{
-                  borderColor: "#E8DDC9",
-                  background: "#F8F3E9",
-                }}
-              >
-                <PlaceholderImage label="Replace with customer photo" />
-
-                <div className="p-5">
-                  <p
-                    className="italic text-sm leading-6"
-                    style={{ color: INK }}
-                  >
-                    "{testimonial.quote}"
-                  </p>
-
-                  <p
-                    className="mt-4 text-sm"
-                    style={{ color: SAGE_DARK }}
-                  >
-                    — {testimonial.name}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <Link
-              to="/feedback"
-              className="inline-flex items-center gap-1 text-sm"
-              style={{ color: SAGE_DARK }}
+      {feedbackLoaded && feedback.length > 0 && (
+        <section
+          className="py-24 md:py-28"
+          style={{ background: CREAM }}
+        >
+          <Reveal className="max-w-6xl mx-auto px-6">
+            <h2
+              className="display text-3xl md:text-4xl text-center mb-10"
+              style={{ color: INK }}
             >
-              View all feedback
-              <ChevronRight size={15} />
-            </Link>
-          </div>
-        </Reveal>
-      </section>
+              Happy customers
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {feedback.map((item) => (
+                <div
+                  key={item.id}
+                  className="border"
+                  style={{
+                    borderColor: "#E8DDC9",
+                    background: "#F8F3E9",
+                  }}
+                >
+                  <PlaceholderImage label="Replace with customer photo" />
+
+                  <div className="p-5">
+                    <p
+                      className="italic text-sm leading-6"
+                      style={{ color: INK }}
+                    >
+                      "{item.quote}"
+                    </p>
+
+                    <p
+                      className="mt-4 text-sm"
+                      style={{ color: SAGE_DARK }}
+                    >
+                      — {item.customer_name}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center mt-8">
+              <Link
+                to="/feedback"
+                className="inline-flex items-center gap-1 text-sm"
+                style={{ color: SAGE_DARK }}
+              >
+                View all feedback
+                <ChevronRight size={15} />
+              </Link>
+            </div>
+          </Reveal>
+        </section>
+      )}
     </>
   );
 }
