@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { CREAM, INK, INK_SOFT, SAGE_DARK, ROSE } from "./theme";
 
@@ -22,13 +23,13 @@ export default function NotFound() {
         The page you're looking for doesn't exist, or may have moved.
       </p>
 
-      <a
-        href="/"
+      <Link
+        to="/home"
         className="text-sm px-6 py-3"
         style={{ background: ROSE, color: CREAM }}
       >
         Back to home
-      </a>
+      </Link>
     </div>
   );
 }

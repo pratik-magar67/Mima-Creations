@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { supabase } from "../supabaseClient";
-import { PhotoCarousel } from "../components/PhotoGallery";
 import {
   CREAM,
   CREAM_DARK,
@@ -13,6 +12,8 @@ import {
   CATEGORIES,
   FadeImage,
   PlaceholderImage,
+  SwipeableGallery,
+  getPhotos,
   Reveal,
   LoadingState,
   ErrorState,
@@ -136,6 +137,7 @@ export default function ProductDetail() {
 
   const categoryInfo = CATEGORIES.find((c) => c.id === product.category);
   const isFavorite = favorites.includes(product.id);
+  const isUnavailable = product.available === false;
 
   return (
     <section className="px-6 md:px-12 py-12 max-w-6xl mx-auto">
@@ -157,15 +159,15 @@ export default function ProductDetail() {
 
       <Reveal className="grid md:grid-cols-2 gap-10 items-start">
         <div className="relative">
-          <div className="img-zoom-wrap">
-            {product.image_urls?.length > 0 ? (
-              <PhotoCarousel images={product.image_urls} alt={product.name} className="aspect-[4/5] h-auto" />
-            ) : product.image_url ? (
-              <FadeImage src={product.image_url} alt={product.name} className="aspect-[4/5] h-auto" />
-            ) : (
-              <PlaceholderImage label={product.name} tall />
-            )}
-          </div>
+          <SwipeableGallery images={getPhotos(product)} alt={product.name} tall />
+          {isUnavailable && (
+            <span
+              className="absolute top-3 left-3 text-xs px-3 py-1.5"
+              style={{ background: INK, color: CREAM }}
+            >
+              Currently unavailable
+            </span>
+          )}
           <button
             onClick={() => toggleFavorite(product.id)}
             aria-label={`${isFavorite ? "Remove" : "Save"} ${product.name}`}
@@ -199,13 +201,28 @@ export default function ProductDetail() {
             </p>
           )}
 
-          <Link
-            to={`/enquiry?category=${encodeURIComponent(product.category || "")}&piece=${encodeURIComponent(product.name || "")}`}
-            className="btn text-sm px-6 py-3 inline-block"
-            style={{ background: SAGE_DARK, color: CREAM }}
-          >
-            Enquire about this piece
-          </Link>
+          {isUnavailable ? (
+            <>
+              <p className="text-sm mb-4" style={{ color: ROSE }}>
+                This exact piece is currently unavailable, but we'd love to make something similar for you.
+              </p>
+              <Link
+                to={`/enquiry?category=${encodeURIComponent(product.category || "")}`}
+                className="btn text-sm px-6 py-3 inline-block"
+                style={{ background: SAGE_DARK, color: CREAM }}
+              >
+                Ask about similar pieces
+              </Link>
+            </>
+          ) : (
+            <Link
+              to={`/enquiry?category=${encodeURIComponent(product.category || "")}&piece=${encodeURIComponent(product.name || "")}`}
+              className="btn text-sm px-6 py-3 inline-block"
+              style={{ background: SAGE_DARK, color: CREAM }}
+            >
+              Enquire about this piece
+            </Link>
+          )}
 
           <p className="text-xs mt-4" style={{ color: INK_SOFT }}>
             Made to order · Prepaid only · Every piece fitted to you

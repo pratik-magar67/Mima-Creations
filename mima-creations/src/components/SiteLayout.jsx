@@ -3,6 +3,7 @@ import {
 Menu,
 X,
 Mail,
+Heart,
 } from "lucide-react";
 import {
 Link,
@@ -33,6 +34,7 @@ const [menuOpen, setMenuOpen] = useState(false);
 const [scrolled, setScrolled] = useState(false);
 const [headerScrolled, setHeaderScrolled] =
 useState(false);
+const [favoritesCount, setFavoritesCount] = useState(0);
 
 useEffect(() => {
 setMenuOpen(false);
@@ -43,6 +45,25 @@ window.scrollTo({
 });
 
 }, [location.pathname, location.search]);
+
+// Favorites are kept in localStorage by the Shop/ProductDetail/Favorites
+// pages (key "mima_favorites"). Re-read on every route change so the
+// header badge stays in sync with whatever the person last saved.
+useEffect(() => {
+function readFavorites() {
+  try {
+    const saved = localStorage.getItem("mima_favorites");
+    const parsed = saved ? JSON.parse(saved) : [];
+    setFavoritesCount(Array.isArray(parsed) ? parsed.length : 0);
+  } catch {
+    setFavoritesCount(0);
+  }
+}
+
+readFavorites();
+window.addEventListener("storage", readFavorites);
+return () => window.removeEventListener("storage", readFavorites);
+}, [location.pathname]);
 
 useEffect(() => {
 function handleScroll() {
@@ -165,6 +186,14 @@ fontFamily: "'Jost', sans-serif",
 
       .img-zoom-wrap {
         overflow: hidden;
+      }
+
+      .no-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
       }
       .img-zoom-wrap img, .img-zoom-wrap .placeholder-fill {
         transition: transform var(--dur-slow) var(--ease-elegant);
@@ -311,6 +340,37 @@ fontFamily: "'Jost', sans-serif",
       </nav>
 
       <div className="flex items-center gap-3">
+        <Link
+          to="/favorites"
+          className="relative inline-flex items-center justify-center p-1"
+          aria-label={
+            favoritesCount > 0
+              ? `Favorites, ${favoritesCount} saved`
+              : "Favorites"
+          }
+        >
+          <Heart
+            size={20}
+            color={isActive("favorites") ? ROSE : INK_SOFT}
+            fill={isActive("favorites") ? ROSE : "none"}
+          />
+          {favoritesCount > 0 && (
+            <span
+              className="absolute -top-1 -right-1 flex items-center justify-center text-[10px]"
+              style={{
+                width: "16px",
+                height: "16px",
+                borderRadius: "999px",
+                background: ROSE,
+                color: CREAM,
+                lineHeight: 1,
+              }}
+            >
+              {favoritesCount}
+            </span>
+          )}
+        </Link>
+
         <Link
           to="/enquiry"
           className="btn hidden sm:inline-block text-sm px-5 py-2"
@@ -474,3 +534,4 @@ fontFamily: "'Jost', sans-serif",
 
 );
 }
+
