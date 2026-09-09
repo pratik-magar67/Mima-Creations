@@ -19,6 +19,8 @@ import {
 } from "../components/SiteComponents";
 
 const WHATSAPP_NUMBER = "9779824203807";
+const BUSINESS_EMAIL = "mimaacreation@gmail.com";
+const MAX_REFERENCE_PHOTOS = 3;
 const COOLDOWN_MS = 60000; // 1 minute between submissions
 const MIN_FILL_TIME_MS = 2500; // reject submissions faster than this
 
@@ -63,14 +65,15 @@ export default function Enquiry() {
     budget: "",
   });
 
+  const [contactMethod, setContactMethod] = useState("whatsapp");
+
   const [measurements, setMeasurements] = useState({});
   const [showMeasurements, setShowMeasurements] = useState(false);
 
   const isCrochet = enquiry.category === "crochet";
   const activeMeasurementFields = fieldsForCategory(enquiry.category);
 
-  const [photoFile, setPhotoFile] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photos, setPhotos] = useState([]);
 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -78,6 +81,7 @@ export default function Enquiry() {
   const [formLoadTime] = useState(() => Date.now());
   const [cooldownActive, setCooldownActive] = useState(false);
   const [dbSaveFailed, setDbSaveFailed] = useState(false);
+  const [sentLinks, setSentLinks] = useState({ whatsapp: null, mailto: null });
 
   useEffect(() => {
     try {
@@ -116,42 +120,53 @@ export default function Enquiry() {
   }
 
   async function handlePhotoChange(e) {
-    const file = e.target.files[0] || null;
+    const files = Array.from(e.target.files);
     e.target.value = "";
-    if (!file) return;
+    if (files.length === 0) return;
 
-    const validationError = validateImageFile(file);
-    if (validationError) {
-      setUploadError(validationError);
+    const remaining = MAX_REFERENCE_PHOTOS - photos.length;
+    if (remaining <= 0) {
+      setUploadError(`You can attach up to ${MAX_REFERENCE_PHOTOS} photos.`);
       return;
     }
 
-    if (photoPreview) URL.revokeObjectURL(photoPreview);
-    setUploadError("");
+    const toProcess = files.slice(0, remaining);
+    if (files.length > toProcess.length) {
+      setUploadError(`Only added ${toProcess.length} photo(s) — the limit is ${MAX_REFERENCE_PHOTOS}.`);
+    } else {
+      setUploadError("");
+    }
 
-    try {
-      const resized = await resizeImageFile(file);
-      setPhotoFile(resized);
-      setPhotoPreview(URL.createObjectURL(resized));
-    } catch (err) {
-      console.error("Could not process photo:", err.message);
-      setUploadError("Could not process that photo — please try a different image.");
+    for (const file of toProcess) {
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        setUploadError(validationError);
+        continue;
+      }
+      try {
+        const resized = await resizeImageFile(file);
+        setPhotos((prev) => [...prev, { file: resized, previewUrl: URL.createObjectURL(resized) }]);
+      } catch (err) {
+        console.error("Could not process photo:", err.message);
+        setUploadError("Could not process that photo — please try a different image.");
+      }
     }
   }
 
-  function removePhoto() {
-    if (photoPreview) URL.revokeObjectURL(photoPreview);
-    setPhotoFile(null);
-    setPhotoPreview(null);
+  function removePhoto(index) {
+    setPhotos((prev) => {
+      URL.revokeObjectURL(prev[index].previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
   }
 
-  async function uploadReferencePhoto() {
-    const fileExt = photoFile.name.split(".").pop();
+  async function uploadReferencePhoto(file) {
+    const fileExt = file.name.split(".").pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
     const { error: uploadErr } = await supabase.storage
       .from("enquiry-photos")
-      .upload(fileName, photoFile);
+      .upload(fileName, file);
 
     if (uploadErr) throw new Error(uploadErr.message);
 
@@ -187,11 +202,11 @@ export default function Enquiry() {
     setSubmitting(true);
     setUploadError("");
 
-    let imageUrl = null;
+    let imageUrls = [];
 
     try {
-      if (photoFile) {
-        imageUrl = await uploadReferencePhoto();
+      for (const photo of photos) {
+        imageUrls.push(await uploadReferencePhoto(photo.file));
       }
 
       const cleanMeasurements = Object.fromEntries(
@@ -207,13 +222,14 @@ export default function Enquiry() {
           notes: enquiry.notes || null,
           budget: enquiry.budget || null,
           status: "new",
-          image_url: imageUrl,
+          image_url: imageUrls[0] || null,
+          image_urls: imageUrls.length > 0 ? imageUrls : null,
           measurements: hasMeasurements ? cleanMeasurements : null,
         },
       ]);
 
       if (error) {
-        // WhatsApp remains the primary channel, but tell the customer the backup was not saved.
+        // WhatsApp/email remains the primary channel, but tell the customer the backup was not saved.
         console.error("Could not save enquiry:", error.message);
         setDbSaveFailed(true);
       } else {
@@ -230,18 +246,41 @@ export default function Enquiry() {
             .join(", ")
         : "Not provided";
 
-      const text = encodeURIComponent(
-        `Hi Mima Creations! I would like to submit an enquiry:\n\n` +
-          `*Name:* ${enquiry.name}\n` +
-          `*Contact:* ${enquiry.contact}\n` +
-          `*Category:* ${enquiry.category}\n` +
-          `*Notes:* ${enquiry.notes || "None"}\n` +
-          `*${enquiry.category === "crochet" ? "Crochet details" : "Measurements"}:* ${measurementLines}\n` +
-          `*Reference photo:* ${imageUrl ? "Attached via form" : "None"}\n` +
-          `*Budget:* ${enquiry.budget || "Not specified"}`
-      );
+      const measurementsLabel = enquiry.category === "crochet" ? "Crochet details" : "Measurements";
+      const photoLine = imageUrls.length > 0
+        ? `${imageUrls.length} photo${imageUrls.length > 1 ? "s" : ""} attached via form`
+        : "None";
 
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, "_blank");
+      const summaryLines = [
+        ["Name", enquiry.name],
+        ["Contact", enquiry.contact],
+        ["Category", enquiry.category],
+        ["Notes", enquiry.notes || "None"],
+        [measurementsLabel, measurementLines],
+        ["Reference photo", photoLine],
+        ["Budget", enquiry.budget || "Not specified"],
+      ];
+
+      const whatsappText = encodeURIComponent(
+        `Hi Mima Creations! I would like to submit an enquiry:\n\n` +
+          summaryLines.map(([label, value]) => `*${label}:* ${value}`).join("\n")
+      );
+      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappText}`;
+
+      const mailtoSubject = encodeURIComponent(`Custom order enquiry — ${enquiry.name}`);
+      const mailtoBody = encodeURIComponent(
+        `Hi Mima Creations! I would like to submit an enquiry:\n\n` +
+          summaryLines.map(([label, value]) => `${label}: ${value}`).join("\n")
+      );
+      const mailtoUrl = `mailto:${BUSINESS_EMAIL}?subject=${mailtoSubject}&body=${mailtoBody}`;
+
+      setSentLinks({ whatsapp: whatsappUrl, mailto: mailtoUrl });
+
+      if (contactMethod === "email") {
+        window.location.href = mailtoUrl;
+      } else {
+        window.open(whatsappUrl, "_blank");
+      }
 
       try {
         localStorage.setItem("mima_last_enquiry_ts", String(Date.now()));
@@ -253,7 +292,7 @@ export default function Enquiry() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Enquiry submission failed:", err.message);
-      setUploadError("Could not upload your photo. You can still submit without it.");
+      setUploadError("Could not upload your photos. You can still submit without them.");
     } finally {
       setSubmitting(false);
     }
@@ -266,20 +305,55 @@ export default function Enquiry() {
           <StitchCheck />
         </div>
         <h2 className="display text-3xl mb-3">Thank you, {enquiry.name || "friend"}!</h2>
-        <p className="text-sm mb-8" style={{ color: INK_SOFT }}>
-          Your enquiry has been formatted and opened in WhatsApp. We'll reach out to discuss
-          further details and pricing.
-        </p>
+
+        {contactMethod === "email" ? (
+          <>
+            <p className="text-sm mb-3" style={{ color: INK_SOFT }}>
+              Your enquiry has been prepared in an email to {BUSINESS_EMAIL}. Check that your
+              email app just opened — we'll reach out to discuss further details and pricing.
+            </p>
+            <p className="text-sm mb-8" style={{ color: INK_SOFT }}>
+              Email app didn't open?{" "}
+              <a href={sentLinks.mailto} className="underline" style={{ color: SAGE_DARK }}>
+                Click here to try again
+              </a>
+              , or send it yourself to <a href={`mailto:${BUSINESS_EMAIL}`} className="underline" style={{ color: SAGE_DARK }}>{BUSINESS_EMAIL}</a>.
+              Prefer WhatsApp instead?{" "}
+              <a href={sentLinks.whatsapp} target="_blank" rel="noreferrer" className="underline" style={{ color: SAGE_DARK }}>
+                Send it there
+              </a>.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm mb-3" style={{ color: INK_SOFT }}>
+              Your enquiry has been formatted and opened in WhatsApp. We'll reach out to discuss
+              further details and pricing.
+            </p>
+            <p className="text-sm mb-8" style={{ color: INK_SOFT }}>
+              WhatsApp didn't open?{" "}
+              <a href={sentLinks.whatsapp} target="_blank" rel="noreferrer" className="underline" style={{ color: SAGE_DARK }}>
+                Click here to try again
+              </a>
+              , or prefer email?{" "}
+              <a href={sentLinks.mailto} className="underline" style={{ color: SAGE_DARK }}>
+                Send it that way instead
+              </a>.
+            </p>
+          </>
+        )}
+
         {dbSaveFailed && (
           <p
             className="text-xs mb-8 px-4 py-3 text-left"
             style={{ background: "#F3E4DD", color: "#8A4A3A", border: "1px solid #E3C9BE" }}
           >
             One thing to note: we couldn't save a backup copy of your enquiry on our end, so
-            please make sure to send the WhatsApp message that just opened — that's what we'll
-            use to follow up with you.
+            please make sure to send the {contactMethod === "email" ? "email" : "WhatsApp message"} that
+            just opened — that's what we'll use to follow up with you.
           </p>
         )}
+
         <Link
           to="/home"
           className="btn inline-block text-sm px-6 py-3"
@@ -326,17 +400,45 @@ export default function Enquiry() {
             />
           </label>
 
-          <label className="block">
-            <span className="text-xs" style={{ color: INK_SOFT }}>Contact (email or WhatsApp)</span>
+          <div>
+            <span className="text-xs" style={{ color: INK_SOFT }}>How should we reach you?</span>
+            <div className="flex gap-2 mt-1 mb-2">
+              <button
+                type="button"
+                onClick={() => setContactMethod("whatsapp")}
+                className="text-xs px-3 py-1.5"
+                style={{
+                  background: contactMethod === "whatsapp" ? SAGE_DARK : "transparent",
+                  color: contactMethod === "whatsapp" ? CREAM : INK,
+                  border: `1px solid ${SAGE_DARK}`,
+                }}
+              >
+                WhatsApp
+              </button>
+              <button
+                type="button"
+                onClick={() => setContactMethod("email")}
+                className="text-xs px-3 py-1.5"
+                style={{
+                  background: contactMethod === "email" ? SAGE_DARK : "transparent",
+                  color: contactMethod === "email" ? CREAM : INK,
+                  border: `1px solid ${SAGE_DARK}`,
+                }}
+              >
+                Email
+              </button>
+            </div>
             <input
               required
               name="contact"
+              type={contactMethod === "email" ? "email" : "tel"}
               value={enquiry.contact}
               onChange={handleChange}
-              className="w-full mt-1 p-2 bg-transparent border"
+              placeholder={contactMethod === "email" ? "e.g. you@email.com" : "e.g. 98XXXXXXXX"}
+              className="w-full p-2 bg-transparent border"
               style={{ borderColor: "#2B2620" }}
             />
-          </label>
+          </div>
         </div>
 
         <label className="block mb-5">
@@ -407,35 +509,41 @@ export default function Enquiry() {
 
         <div className="mb-6">
           <span className="text-xs" style={{ color: INK_SOFT }}>
-            Reference photo (optional)
+            Reference photos, optional ({photos.length} / {MAX_REFERENCE_PHOTOS})
           </span>
 
-          {photoPreview ? (
-            <div className="relative mt-2 w-28">
-              <img
-                src={photoPreview}
-                alt="Reference preview"
-                className="w-28 h-28 object-cover"
-                style={{ border: `1px solid ${CREAM_DARK}` }}
-              />
-              <button
-                type="button"
-                onClick={removePhoto}
-                aria-label="Remove photo"
-                className="absolute -top-2 -right-2 p-1"
-                style={{ background: INK, color: CREAM, borderRadius: "999px" }}
-              >
-                <X size={12} />
-              </button>
+          {photos.length > 0 && (
+            <div className="flex flex-wrap gap-3 mt-2">
+              {photos.map((photo, i) => (
+                <div key={photo.previewUrl} className="relative w-28">
+                  <img
+                    src={photo.previewUrl}
+                    alt="Reference preview"
+                    className="w-28 h-28 object-cover"
+                    style={{ border: `1px solid ${CREAM_DARK}` }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(i)}
+                    aria-label="Remove photo"
+                    className="absolute -top-2 -right-2 p-1"
+                    style={{ background: INK, color: CREAM, borderRadius: "999px" }}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
             </div>
-          ) : (
+          )}
+
+          {photos.length < MAX_REFERENCE_PHOTOS && (
             <label
               className="mt-2 flex items-center gap-2 text-sm px-4 py-3 cursor-pointer w-fit"
               style={{ border: `1px dashed ${SAGE_DARK}`, color: SAGE_DARK, background: CREAM }}
             >
               <Upload size={16} />
-              Attach a photo
-              <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+              {photos.length > 0 ? "Attach another photo" : "Attach a photo"}
+              <input type="file" accept="image/*" multiple onChange={handlePhotoChange} className="hidden" />
             </label>
           )}
 
@@ -467,7 +575,11 @@ export default function Enquiry() {
             className="btn text-sm px-6 py-3 w-full sm:w-auto"
             style={{ background: ROSE, color: CREAM, opacity: submitting ? 0.6 : 1 }}
           >
-            {submitting ? "Sending..." : "Send enquiry"}
+            {submitting
+              ? "Sending..."
+              : contactMethod === "email"
+              ? "Send enquiry by email"
+              : "Send enquiry on WhatsApp"}
           </button>
         )}
 
