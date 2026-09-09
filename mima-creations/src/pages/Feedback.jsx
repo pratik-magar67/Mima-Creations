@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
+import { ScrollableGallery } from "../components/PhotoGallery";
 import {
   CREAM,
   CREAM_DARK,
@@ -60,7 +61,9 @@ export default function Feedback() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {feedback.map((item) => (
               <div key={item.id} style={{ border: `1px solid ${CREAM_DARK}`, background: "#F8F3E9" }}>
-                {item.image_url ? (
+                {item.image_urls?.length > 0 ? (
+                  <ScrollableGallery images={item.image_urls} alt={item.customer_name} />
+                ) : item.image_url ? (
                   <img src={item.image_url} alt={item.customer_name} className="w-full aspect-square object-cover" />
                 ) : (
                   <PlaceholderImage label="Replace with customer photo" />

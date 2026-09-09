@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { supabase } from "../supabaseClient";
+import { PhotoCarousel } from "../components/PhotoGallery";
 import {
   CREAM,
   CREAM_DARK,
@@ -157,7 +158,9 @@ export default function ProductDetail() {
       <Reveal className="grid md:grid-cols-2 gap-10 items-start">
         <div className="relative">
           <div className="img-zoom-wrap">
-            {product.image_url ? (
+            {product.image_urls?.length > 0 ? (
+              <PhotoCarousel images={product.image_urls} alt={product.name} className="aspect-[4/5] h-auto" />
+            ) : product.image_url ? (
               <FadeImage src={product.image_url} alt={product.name} className="aspect-[4/5] h-auto" />
             ) : (
               <PlaceholderImage label={product.name} tall />

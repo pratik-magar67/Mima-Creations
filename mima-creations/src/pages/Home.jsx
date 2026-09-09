@@ -43,6 +43,7 @@ import {
   FadeInOnMount,
   StitchDivider,
 } from "../components/SiteComponents";
+import { ScrollableGallery } from "../components/PhotoGallery";
 
 export default function Home() {
   const [heroImages, setHeroImages] = useState(FALLBACK_HERO_IMAGES);
@@ -311,7 +312,9 @@ export default function Home() {
                     background: "#F8F3E9",
                   }}
                 >
-                  {item.image_url ? (
+                  {item.image_urls?.length > 0 ? (
+                    <ScrollableGallery images={item.image_urls} alt={item.customer_name} />
+                  ) : item.image_url ? (
                     <img src={item.image_url} alt={item.customer_name} className="w-full aspect-square object-cover" />
                   ) : (
                     <PlaceholderImage label="Replace with customer photo" />
