@@ -12,8 +12,6 @@ import {
   CATEGORIES,
   FadeImage,
   PlaceholderImage,
-  SwipeableGallery,
-  getPhotos,
   Reveal,
   LoadingState,
   ErrorState,
@@ -159,7 +157,13 @@ export default function ProductDetail() {
 
       <Reveal className="grid md:grid-cols-2 gap-10 items-start">
         <div className="relative">
-          <SwipeableGallery images={getPhotos(product)} alt={product.name} tall />
+          <div className="img-zoom-wrap">
+            {product.image_url ? (
+              <FadeImage src={product.image_url} alt={product.name} className="aspect-[4/5] h-auto" />
+            ) : (
+              <PlaceholderImage label={product.name} tall />
+            )}
+          </div>
           {isUnavailable && (
             <span
               className="absolute top-3 left-3 text-xs px-3 py-1.5"
@@ -260,3 +264,4 @@ export default function ProductDetail() {
     </section>
   );
 }
+

@@ -187,14 +187,6 @@ fontFamily: "'Jost', sans-serif",
       .img-zoom-wrap {
         overflow: hidden;
       }
-
-      .no-scrollbar {
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-      }
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
       .img-zoom-wrap img, .img-zoom-wrap .placeholder-fill {
         transition: transform var(--dur-slow) var(--ease-elegant);
       }
