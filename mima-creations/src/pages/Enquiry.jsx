@@ -389,7 +389,7 @@ export default function Enquiry() {
               className="w-full p-2 bg-transparent border"
               style={{ borderColor: "#2B2620" }}
             />
-            {enquiry.contactMethod === "whatsapp" && }
+            
           </div>
         </div>
 
