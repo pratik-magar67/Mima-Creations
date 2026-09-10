@@ -59,13 +59,13 @@ export default function Enquiry() {
 
   const [enquiry, setEnquiry] = useState({
     name: "",
-    contact: "",
     category: validCategory,
     notes: pieceFromUrl ? `Interested in: ${pieceFromUrl}` : "",
     budget: "",
   });
 
   const [contactMethod, setContactMethod] = useState("whatsapp");
+  const [contactValues, setContactValues] = useState({ whatsapp: "", email: "" });
 
   const [measurements, setMeasurements] = useState({});
   const [showMeasurements, setShowMeasurements] = useState(false);
@@ -113,6 +113,11 @@ export default function Enquiry() {
       }
       return next;
     });
+  }
+
+  function handleContactChange(e) {
+    const { value } = e.target;
+    setContactValues((current) => ({ ...current, [contactMethod]: value }));
   }
 
   function handleMeasurementChange(key, value) {
@@ -214,10 +219,12 @@ export default function Enquiry() {
       );
       const hasMeasurements = Object.keys(cleanMeasurements).length > 0;
 
+      const contactValue = contactValues[contactMethod];
+
       const { error } = await supabase.from("enquiries").insert([
         {
           name: enquiry.name,
-          contact: enquiry.contact,
+          contact: contactValue,
           category: enquiry.category,
           notes: enquiry.notes || null,
           budget: enquiry.budget || null,
@@ -253,7 +260,7 @@ export default function Enquiry() {
 
       const summaryLines = [
         ["Name", enquiry.name],
-        ["Contact", enquiry.contact],
+        ["Contact", contactValue],
         ["Category", enquiry.category],
         ["Notes", enquiry.notes || "None"],
         [measurementsLabel, measurementLines],
@@ -404,42 +411,36 @@ export default function Enquiry() {
             <span className="text-xs" style={{ color: INK_SOFT }}>How should we reach you?</span>
             <div className="flex gap-2 mt-1 mb-2">
               <button
-              type="button"
-              onClick={() => {
-                if (contactMethod !== "whatsapp") setEnquiry((current) => ({ ...current, contact: "" }));
-              setContactMethod("whatsapp");
-              }}
-              className="text-xs px-3 py-1.5"
-              style={{
-                background: contactMethod === "whatsapp" ? SAGE_DARK : "transparent",
-              color: contactMethod === "whatsapp" ? CREAM : INK,
-              border: `1px solid ${SAGE_DARK}`,
-              }}
+                type="button"
+                onClick={() => setContactMethod("whatsapp")}
+                className="text-xs px-3 py-1.5"
+                style={{
+                  background: contactMethod === "whatsapp" ? SAGE_DARK : "transparent",
+                  color: contactMethod === "whatsapp" ? CREAM : INK,
+                  border: `1px solid ${SAGE_DARK}`,
+                }}
               >
-            WhatsApp
-            </button>
-            <button
-            type="button"
-            onClick={() => {
-              if (contactMethod !== "email") setEnquiry((current) => ({ ...current, contact: "" }));
-            setContactMethod("email");
-            }}
-            className="text-xs px-3 py-1.5"
-            style={{
-              background: contactMethod === "email" ? SAGE_DARK : "transparent",
-              color: contactMethod === "email" ? CREAM : INK,
-              border: `1px solid ${SAGE_DARK}`,
-            }}
->
-  Email
-</button>
+                WhatsApp
+              </button>
+              <button
+                type="button"
+                onClick={() => setContactMethod("email")}
+                className="text-xs px-3 py-1.5"
+                style={{
+                  background: contactMethod === "email" ? SAGE_DARK : "transparent",
+                  color: contactMethod === "email" ? CREAM : INK,
+                  border: `1px solid ${SAGE_DARK}`,
+                }}
+              >
+                Email
+              </button>
             </div>
             <input
               required
               name="contact"
               type={contactMethod === "email" ? "email" : "tel"}
-              value={enquiry.contact}
-              onChange={handleChange}
+              value={contactValues[contactMethod]}
+              onChange={handleContactChange}
               placeholder={contactMethod === "email" ? "e.g. you@email.com" : "e.g. 98XXXXXXXX"}
               className="w-full p-2 bg-transparent border"
               style={{ borderColor: "#2B2620" }}
