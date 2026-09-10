@@ -404,29 +404,35 @@ export default function Enquiry() {
             <span className="text-xs" style={{ color: INK_SOFT }}>How should we reach you?</span>
             <div className="flex gap-2 mt-1 mb-2">
               <button
-                type="button"
-                onClick={() => setContactMethod("whatsapp")}
-                className="text-xs px-3 py-1.5"
-                style={{
-                  background: contactMethod === "whatsapp" ? SAGE_DARK : "transparent",
-                  color: contactMethod === "whatsapp" ? CREAM : INK,
-                  border: `1px solid ${SAGE_DARK}`,
-                }}
+              type="button"
+              onClick={() => {
+                if (contactMethod !== "whatsapp") setEnquiry((current) => ({ ...current, contact: "" }));
+              setContactMethod("whatsapp");
+              }}
+              className="text-xs px-3 py-1.5"
+              style={{
+                background: contactMethod === "whatsapp" ? SAGE_DARK : "transparent",
+              color: contactMethod === "whatsapp" ? CREAM : INK,
+              border: `1px solid ${SAGE_DARK}`,
+              }}
               >
-                WhatsApp
-              </button>
-              <button
-                type="button"
-                onClick={() => setContactMethod("email")}
-                className="text-xs px-3 py-1.5"
-                style={{
-                  background: contactMethod === "email" ? SAGE_DARK : "transparent",
-                  color: contactMethod === "email" ? CREAM : INK,
-                  border: `1px solid ${SAGE_DARK}`,
-                }}
-              >
-                Email
-              </button>
+            WhatsApp
+            </button>
+            <button
+            type="button"
+            onClick={() => {
+              if (contactMethod !== "email") setEnquiry((current) => ({ ...current, contact: "" }));
+            setContactMethod("email");
+            }}
+            className="text-xs px-3 py-1.5"
+            style={{
+              background: contactMethod === "email" ? SAGE_DARK : "transparent",
+              color: contactMethod === "email" ? CREAM : INK,
+              border: `1px solid ${SAGE_DARK}`,
+            }}
+>
+  Email
+</button>
             </div>
             <input
               required
